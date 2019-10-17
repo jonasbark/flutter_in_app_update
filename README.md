@@ -1,7 +1,10 @@
 [![pub package](https://img.shields.io/pub/v/in_app_update.svg)](https://pub.dev/packages/in_app_update)
 
 Presented by
-[![ffuf](https://ffuf.de/wp-content/themes/ffuf_theme/images/ffuf-logo.png)](https://ffuf.de)
+
+<img src="https://ffuf.de/wp-content/themes/ffuf_theme/images/ffuf-logo.png" width="150">
+
+https://ffuf.de
 
 # in_app_update
 
