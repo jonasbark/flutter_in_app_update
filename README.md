@@ -9,7 +9,9 @@ https://ffuf.de
 # in_app_update
 
 Enables In App Updates on Android using the official Android APIs.
-https://developer.android.com/guide/app-bundle/in-app-updates#kotlin
+https://developer.android.com/guide/app-bundle/in-app-updates
+
+<img src="https://1.bp.blogspot.com/-GaTF6oyImjs/W-MlwAaG2fI/AAAAAAAAF5U/AM6wAxT6VRwVShp3RJEiWkubSdCNn1mDgCLcBGAs/s1600/in-app_updates.gif" width="400">
 
 ## Documentation
 
@@ -24,7 +26,7 @@ Please have a look in the example app on how to use it!
 ### Android
 
 This plugin integrates the official Android APIs to perform in app updated that were released in 2019:
-https://developer.android.com/guide/app-bundle/in-app-updates#kotlin
+https://developer.android.com/guide/app-bundle/in-app-updates
 
 ### iOS
 iOS does not offer such a functionality. You might want to look into e.g. https://pub.dev/packages/upgrader. 
