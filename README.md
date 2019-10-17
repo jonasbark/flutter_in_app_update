@@ -11,7 +11,7 @@ https://ffuf.de
 Enables In App Updates on Android using the official Android APIs.
 https://developer.android.com/guide/app-bundle/in-app-updates
 
-<img src="https://1.bp.blogspot.com/-GaTF6oyImjs/W-MlwAaG2fI/AAAAAAAAF5U/AM6wAxT6VRwVShp3RJEiWkubSdCNn1mDgCLcBGAs/s1600/in-app_updates.gif" width="400">
+<img src="https://2.bp.blogspot.com/-9V4ZsdRRnIA/XNSYN-do_OI/AAAAAAAAI90/2yFBsTij0kcibkGRuB79fS_jZKcy-APdQCLcBGAs/s1600/Screen%2BShot%2B2019-05-09%2Bat%2B2.13.58%2BPM.png" width="400">
 
 ## Documentation
 
