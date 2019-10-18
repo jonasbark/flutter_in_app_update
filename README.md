@@ -6,6 +6,8 @@ Presented by
 
 https://ffuf.de
 
+Maintained by [Jonas Bark](https://twitter.com/boni2k)
+
 # in_app_update
 
 Enables In App Updates on Android using the official Android APIs.
@@ -30,3 +32,4 @@ https://developer.android.com/guide/app-bundle/in-app-updates
 
 ### iOS
 iOS does not offer such a functionality. You might want to look into e.g. https://pub.dev/packages/upgrader. 
+If you call the methods above on a iOS device you'll run into a not-implemented exception.
