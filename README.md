@@ -5,7 +5,6 @@ Presented by
 <img src="https://ffuf.de/wp-content/themes/ffuf_theme/images/ffuf-logo.png" width="150">
 
 https://ffuf.de
-
 Maintained by [Jonas Bark](https://twitter.com/boni2k)
 
 # in_app_update
