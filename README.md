@@ -5,11 +5,13 @@ Presented by
 <img src="https://ffuf.de/wp-content/themes/ffuf_theme/images/ffuf-logo.png" width="150">
 
 https://ffuf.de
+
 Maintained by [Jonas Bark](https://twitter.com/boni2k)
 
 # in_app_update
 
 Enables In App Updates on Android using the official Android APIs.
+
 https://developer.android.com/guide/app-bundle/in-app-updates
 
 <img src="https://2.bp.blogspot.com/-9V4ZsdRRnIA/XNSYN-do_OI/AAAAAAAAI90/2yFBsTij0kcibkGRuB79fS_jZKcy-APdQCLcBGAs/s1600/Screen%2BShot%2B2019-05-09%2Bat%2B2.13.58%2BPM.png" width="400">
