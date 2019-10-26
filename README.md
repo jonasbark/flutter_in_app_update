@@ -19,7 +19,7 @@ https://developer.android.com/guide/app-bundle/in-app-updates
 ## Documentation
 
 The following methods are exposed:
-- `Future<InAppUpdateState> checkForUpdate()`: Checks if there's an update available
+- `Future<AppUpdateInfo> checkForUpdate()`: Checks if there's an update available
 - `Future<void> performImmediateUpdate()`: Performs an immediate update (full-screen)
 - `Future<void> startFlexibleUpdate()`: Starts a flexible update (background download)
 - `Future<void> completeFlexibleUpdate()`: Actually installs an available flexible update
