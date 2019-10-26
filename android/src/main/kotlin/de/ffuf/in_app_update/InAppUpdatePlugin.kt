@@ -2,23 +2,26 @@ package de.ffuf.in_app_update
 
 import android.app.Activity
 import android.app.Activity.RESULT_OK
-import android.content.Context
 import android.content.Intent
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
+import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.embedding.engine.plugins.lifecycle.FlutterLifecycleAdapter
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
 import io.flutter.plugin.common.PluginRegistry.Registrar
-import java.lang.IllegalArgumentException
 
 class InAppUpdatePlugin(private val activity: Activity) : MethodCallHandler,
-  PluginRegistry.ActivityResultListener {
+  PluginRegistry.ActivityResultListener, FlutterPlugin {
 
   companion object {
     @JvmStatic
@@ -32,6 +35,28 @@ class InAppUpdatePlugin(private val activity: Activity) : MethodCallHandler,
     private const val REQUEST_CODE_START_UPDATE = 1388276
   }
 
+  inner class CustomObserver : LifecycleObserver {
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    fun onResume() {
+      appUpdateManager
+        .appUpdateInfo
+        .addOnSuccessListener { appUpdateInfo ->
+          if (appUpdateInfo.updateAvailability()
+            == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS
+          ) {
+            appUpdateManager.startUpdateFlowForResult(
+              appUpdateInfo,
+              AppUpdateType.IMMEDIATE,
+              activity,
+              REQUEST_CODE_START_UPDATE
+            )
+          }
+        }
+    }
+  }
+
+  private var lifecycleObserver: CustomObserver? = null
+   
   private var updateResult: Result? = null
   private var appUpdateInfo: AppUpdateInfo? = null
 
@@ -40,6 +65,19 @@ class InAppUpdatePlugin(private val activity: Activity) : MethodCallHandler,
     AppUpdateManagerFactory.create(activity)
   }
 
+
+  override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+    val lifecycle = FlutterLifecycleAdapter.getLifecycle(binding)
+    lifecycleObserver = CustomObserver()
+
+    lifecycle.addObserver(lifecycleObserver!!)
+  }
+
+  override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+    val lifecycle = FlutterLifecycleAdapter.getLifecycle(binding)
+
+    if (lifecycleObserver != null) lifecycle.removeObserver(lifecycleObserver!!)
+  }
 
   override fun onMethodCall(call: MethodCall, result: Result) {
     when {
@@ -129,7 +167,9 @@ class InAppUpdatePlugin(private val activity: Activity) : MethodCallHandler,
       } else {
         result.success(
           mapOf(
-            "updateAvailable" to false
+            "updateAvailable" to true,
+            "immediateAllowed" to false,
+            "flexibleAllowed" to false
           )
         )
       }
