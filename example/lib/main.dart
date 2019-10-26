@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
 import 'dart:async';
 
-import 'package:flutter/services.dart';
+import 'package:flutter/material.dart';
 import 'package:in_app_update/in_app_update.dart';
 
 void main() => runApp(MyApp());
@@ -12,7 +11,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  InAppUpdateState _updateState;
+  AppUpdateInfo _updateInfo;
 
   GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey();
 
@@ -25,15 +24,16 @@ class _MyAppState extends State<MyApp> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> checkForUpdate() async {
-    InAppUpdate.checkForUpdate().then((state) {
+    InAppUpdate.checkForUpdate().then((info) {
       setState(() {
-        _updateState = state;
+        _updateInfo = info;
       });
     }).catchError((e) => _showError(e));
   }
 
   void _showError(dynamic exception) {
-    _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text(exception.toString())));
+    _scaffoldKey.currentState
+        .showSnackBar(SnackBar(content: Text(exception.toString())));
   }
 
   @override
@@ -49,7 +49,7 @@ class _MyAppState extends State<MyApp> {
           child: Column(
             children: <Widget>[
               Center(
-                child: Text('Update state: $_updateState'),
+                child: Text('Update info: $_updateInfo'),
               ),
               RaisedButton(
                 child: Text('Check for Update'),
@@ -77,9 +77,9 @@ class _MyAppState extends State<MyApp> {
                     ? null
                     : () {
                         InAppUpdate.completeFlexibleUpdate().then((_) {
-                          _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text('Success!')));
+                          _scaffoldKey.currentState.showSnackBar(
+                              SnackBar(content: Text('Success!')));
                         }).catchError((e) => _showError(e));
-                        ;
                       },
               )
             ],

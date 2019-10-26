@@ -5,48 +5,64 @@ import 'package:flutter/services.dart';
 class InAppUpdate {
   static const MethodChannel _channel = const MethodChannel('in_app_update');
 
-  static Future<InAppUpdateState> checkForUpdate() async {
+  /// Has to be called before being able to start any update.
+  ///
+  /// Returns [AppUpdateInfo], which can be used to decide if
+  /// [startFlexibleUpdate] or [performImmediateUpdate] should be called.
+  static Future<AppUpdateInfo> checkForUpdate() async {
     final result = await _channel.invokeMethod('checkForUpdate');
-    return InAppUpdateState(result['updateAvailable'], result['updateType']);
+    return AppUpdateInfo(result['updateAvailable'], result['immediateAllowed'],
+        result['flexibleAllowed']);
   }
 
+  /// Performs an immediate update that is entirely handled by the Play API.
+  ///
+  /// [checkForUpdate] has to be called first to be able to run this.
   static Future<void> performImmediateUpdate() async {
     return await _channel.invokeMethod('performImmediateUpdate');
   }
 
+  /// Starts the download of the app update.
+  ///
+  /// Throws a [PlatformException] if the download fails.
+  /// When the returned [Future] is completed without any errors,
+  /// [completeFlexibleUpdate] can be called to install the update.
+  ///
+  /// [checkForUpdate] has to be called first to be able to run this.
   static Future<void> startFlexibleUpdate() async {
     return await _channel.invokeMethod('startFlexibleUpdate');
   }
 
+  /// Installs the update downloaded via [startFlexibleUpdate].
+  /// [startFlexibleUpdate] has to be completed successfully.
   static Future<void> completeFlexibleUpdate() async {
     return await _channel.invokeMethod('completeFlexibleUpdate');
   }
 }
 
-enum UpdateType { FLEXIBLE, IMMEDIATE }
+class AppUpdateInfo {
+  final bool updateAvailable, immediateUpdateAllowed, flexibleUpdateAllowed;
 
-class InAppUpdateState {
-  bool updateAvailable;
-  UpdateType updateType;
-
-  InAppUpdateState(bool updateAvailable, int updateType) {
-    this.updateAvailable = updateAvailable;
-    this.updateType = updateType != null ? UpdateType.values[updateType] : null;
-  }
+  AppUpdateInfo(this.updateAvailable, this.immediateUpdateAllowed,
+      this.flexibleUpdateAllowed);
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is InAppUpdateState &&
+      other is AppUpdateInfo &&
           runtimeType == other.runtimeType &&
           updateAvailable == other.updateAvailable &&
-          updateType == other.updateType;
+          immediateUpdateAllowed == other.immediateUpdateAllowed &&
+          flexibleUpdateAllowed == other.flexibleUpdateAllowed;
 
   @override
-  int get hashCode => updateAvailable.hashCode ^ updateType.hashCode;
+  int get hashCode =>
+      updateAvailable.hashCode ^
+      immediateUpdateAllowed.hashCode ^
+      flexibleUpdateAllowed.hashCode;
 
   @override
-  String toString() {
-    return 'InAppUpdateState{updateAvailable: $updateAvailable}';
-  }
+  String toString() => 'InAppUpdateState{updateAvailable: $updateAvailable, '
+      'immediateUpdateAllowed: $immediateUpdateAllowed, '
+      'flexibleUpdateAllowed: $flexibleUpdateAllowed}';
 }
