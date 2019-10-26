@@ -35,23 +35,23 @@ class InAppUpdatePlugin(private val activity: Activity) : MethodCallHandler,
     private const val REQUEST_CODE_START_UPDATE = 1388276
   }
 
-  inner class CustomObserver: LifecycleObserver {
+  inner class CustomObserver : LifecycleObserver {
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     fun onResume() {
       appUpdateManager
-              .appUpdateInfo
-              .addOnSuccessListener { appUpdateInfo ->
-                if (appUpdateInfo.updateAvailability()
-                        == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS
-                ) {
-                  appUpdateManager.startUpdateFlowForResult(
-                          appUpdateInfo,
-                          AppUpdateType.IMMEDIATE,
-                          activity,
-                          REQUEST_CODE_START_UPDATE
-                  )
-                }
-              }
+        .appUpdateInfo
+        .addOnSuccessListener { appUpdateInfo ->
+          if (appUpdateInfo.updateAvailability()
+            == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS
+          ) {
+            appUpdateManager.startUpdateFlowForResult(
+              appUpdateInfo,
+              AppUpdateType.IMMEDIATE,
+              activity,
+              REQUEST_CODE_START_UPDATE
+            )
+          }
+        }
     }
   }
 
