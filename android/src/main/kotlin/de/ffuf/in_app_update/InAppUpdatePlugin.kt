@@ -56,6 +56,15 @@ class InAppUpdatePlugin(private val activity: Activity) : MethodCallHandler,
   }
 
   private var lifecycleObserver: CustomObserver? = null
+   
+  private var updateResult: Result? = null
+  private var appUpdateInfo: AppUpdateInfo? = null
+
+  // Creates instance of the manager.
+  private val appUpdateManager by lazy {
+    AppUpdateManagerFactory.create(activity)
+  }
+
 
   override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     val lifecycle = FlutterLifecycleAdapter.getLifecycle(binding)
@@ -68,14 +77,6 @@ class InAppUpdatePlugin(private val activity: Activity) : MethodCallHandler,
     val lifecycle = FlutterLifecycleAdapter.getLifecycle(binding)
 
     if (lifecycleObserver != null) lifecycle.removeObserver(lifecycleObserver!!)
-  }
-
-  private var updateResult: Result? = null
-  private var appUpdateInfo: AppUpdateInfo? = null
-
-  // Creates instance of the manager.
-  private val appUpdateManager by lazy {
-    AppUpdateManagerFactory.create(activity)
   }
 
   override fun onMethodCall(call: MethodCall, result: Result) {
