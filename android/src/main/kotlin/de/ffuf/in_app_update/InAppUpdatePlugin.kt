@@ -158,7 +158,7 @@ class InAppUpdatePlugin(private val activity: Activity) : MethodCallHandler,
             } else {
                 result.success(
                     mapOf(
-                        "updateAvailable" to true,
+                        "updateAvailable" to false,
                         "immediateAllowed" to false,
                         "flexibleAllowed" to false
                     )
