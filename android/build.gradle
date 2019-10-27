@@ -41,6 +41,5 @@ android {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'com.google.android.play:core:1.6.3'
-    implementation project(':flutter_plugin_android_lifecycle')
+    implementation 'com.google.android.play:core:1.6.4'
 }

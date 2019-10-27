@@ -11,8 +11,6 @@ environment:
   sdk: ">=2.2.0 <3.0.0"
 
 dependencies:
-  flutter_plugin_android_lifecycle: ^1.0.0
-
   flutter:
     sdk: flutter
 
