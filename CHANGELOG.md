@@ -1,3 +1,7 @@
+## 1.1.3
+
+* Fixed `updateAvailable`.
+
 ## 1.1.2
 
 * Fix Android build.
