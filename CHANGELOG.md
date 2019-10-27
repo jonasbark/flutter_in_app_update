@@ -1,3 +1,7 @@
+## 1.1.2
+
+* Fix Android build.
+
 ## 1.1.1
 
 * **Breaking change**: Renamed `InAppUpdateState` to `AppUpdateInfo` to mirror the Android SDK and

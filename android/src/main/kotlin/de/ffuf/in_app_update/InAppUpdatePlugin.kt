@@ -67,16 +67,16 @@ class InAppUpdatePlugin(private val activity: Activity) : MethodCallHandler,
 
 
   override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-    val lifecycle = FlutterLifecycleAdapter.getLifecycle(binding)
+    val lifecycle: Lifecycle? = FlutterLifecycleAdapter.getLifecycle(binding)
     lifecycleObserver = CustomObserver()
 
-    lifecycle.addObserver(lifecycleObserver!!)
+    lifecycle?.addObserver(lifecycleObserver!!)
   }
 
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-    val lifecycle = FlutterLifecycleAdapter.getLifecycle(binding)
+    val lifecycle: Lifecycle? = FlutterLifecycleAdapter.getLifecycle(binding)
 
-    if (lifecycleObserver != null) lifecycle.removeObserver(lifecycleObserver!!)
+    if (lifecycleObserver != null) lifecycle?.removeObserver(lifecycleObserver!!)
   }
 
   override fun onMethodCall(call: MethodCall, result: Result) {
