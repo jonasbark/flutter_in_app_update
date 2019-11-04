@@ -12,7 +12,7 @@ class InAppUpdate {
   static Future<AppUpdateInfo> checkForUpdate() async {
     final result = await _channel.invokeMethod('checkForUpdate');
     return AppUpdateInfo(result['updateAvailable'], result['immediateAllowed'],
-        result['flexibleAllowed']);
+        result['flexibleAllowed'], result['availableVersionCode']);
   }
 
   /// Performs an immediate update that is entirely handled by the Play API.
@@ -42,9 +42,10 @@ class InAppUpdate {
 
 class AppUpdateInfo {
   final bool updateAvailable, immediateUpdateAllowed, flexibleUpdateAllowed;
+  final int availableVersionCode;
 
   AppUpdateInfo(this.updateAvailable, this.immediateUpdateAllowed,
-      this.flexibleUpdateAllowed);
+      this.flexibleUpdateAllowed, this.availableVersionCode);
 
   @override
   bool operator ==(Object other) =>
@@ -53,16 +54,19 @@ class AppUpdateInfo {
           runtimeType == other.runtimeType &&
           updateAvailable == other.updateAvailable &&
           immediateUpdateAllowed == other.immediateUpdateAllowed &&
-          flexibleUpdateAllowed == other.flexibleUpdateAllowed;
+          flexibleUpdateAllowed == other.flexibleUpdateAllowed &&
+          availableVersionCode == other.availableVersionCode;
 
   @override
   int get hashCode =>
       updateAvailable.hashCode ^
       immediateUpdateAllowed.hashCode ^
-      flexibleUpdateAllowed.hashCode;
+      flexibleUpdateAllowed.hashCode ^
+      availableVersionCode.hashCode;
 
   @override
   String toString() => 'InAppUpdateState{updateAvailable: $updateAvailable, '
       'immediateUpdateAllowed: $immediateUpdateAllowed, '
-      'flexibleUpdateAllowed: $flexibleUpdateAllowed}';
+      'flexibleUpdateAllowed: $flexibleUpdateAllowed, '
+      'availableVersionCode: $availableVersionCode}';
 }

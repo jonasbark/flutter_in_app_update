@@ -152,7 +152,8 @@ class InAppUpdatePlugin(private val activity: Activity) : MethodCallHandler,
                     mapOf(
                         "updateAvailable" to true,
                         "immediateAllowed" to info.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE),
-                        "flexibleAllowed" to info.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)
+                        "flexibleAllowed" to info.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE),
+                        "availableVersionCode" to info.availableVersionCode()
                     )
                 )
             } else {
@@ -160,7 +161,8 @@ class InAppUpdatePlugin(private val activity: Activity) : MethodCallHandler,
                     mapOf(
                         "updateAvailable" to false,
                         "immediateAllowed" to false,
-                        "flexibleAllowed" to false
+                        "flexibleAllowed" to false,
+                        "availableVersionCode" to null
                     )
                 )
             }

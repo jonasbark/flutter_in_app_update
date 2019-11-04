@@ -1,3 +1,8 @@
+## 1.1.4
+
+* Expose Available Version Code: https://developer.android.com/reference/com/google/android/play/core/appupdate/AppUpdateInfo.html#availableVersionCode()
+(fixes https://github.com/feilfeilundfeil/flutter_in_app_update/issues/7)
+
 ## 1.1.3
 
 * Fix Android build.
