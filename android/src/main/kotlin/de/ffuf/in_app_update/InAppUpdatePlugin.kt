@@ -54,14 +54,12 @@ class InAppUpdatePlugin(private val activity: Activity) : MethodCallHandler,
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
         if (requestCode == REQUEST_CODE_START_UPDATE) {
-            requireNotNull(updateResult) {
-                "Fix your code!"
-            }
             if (resultCode != RESULT_OK) {
                 updateResult?.error("Update failed", resultCode.toString(), null)
             } else {
                 updateResult?.success(null)
             }
+            updateResult = null
             return true
         }
         return false
