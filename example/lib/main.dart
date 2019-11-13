@@ -32,8 +32,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _showError(dynamic exception) {
-    _scaffoldKey.currentState
-        .showSnackBar(SnackBar(content: Text(exception.toString())));
+    _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text(exception.toString())));
   }
 
   @override
@@ -57,19 +56,23 @@ class _MyAppState extends State<MyApp> {
               ),
               RaisedButton(
                 child: Text('Perform immediate update'),
-                onPressed: () {
-                  InAppUpdate.performImmediateUpdate();
-                },
+                onPressed: _updateInfo?.updateAvailable == true
+                    ? () {
+                        InAppUpdate.performImmediateUpdate().catchError((e) => _showError(e));
+                      }
+                    : null,
               ),
               RaisedButton(
                 child: Text('Start flexible update'),
-                onPressed: () {
-                  InAppUpdate.startFlexibleUpdate().then((_) {
-                    setState(() {
-                      _flexibleUpdateAvailable = true;
-                    });
-                  }).catchError((e) => _showError(e));
-                },
+                onPressed: _updateInfo?.updateAvailable == true
+                    ? () {
+                        InAppUpdate.startFlexibleUpdate().then((_) {
+                          setState(() {
+                            _flexibleUpdateAvailable = true;
+                          });
+                        }).catchError((e) => _showError(e));
+                      }
+                    : null,
               ),
               RaisedButton(
                 child: Text('Complete flexible update'),
@@ -77,8 +80,7 @@ class _MyAppState extends State<MyApp> {
                     ? null
                     : () {
                         InAppUpdate.completeFlexibleUpdate().then((_) {
-                          _scaffoldKey.currentState.showSnackBar(
-                              SnackBar(content: Text('Success!')));
+                          _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text('Success!')));
                         }).catchError((e) => _showError(e));
                       },
               )

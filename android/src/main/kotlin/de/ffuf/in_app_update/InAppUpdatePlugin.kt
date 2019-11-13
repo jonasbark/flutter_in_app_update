@@ -6,6 +6,7 @@ import android.app.Application
 import android.content.Intent
 import android.os.Bundle
 import com.google.android.play.core.appupdate.AppUpdateInfo
+import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
@@ -17,16 +18,14 @@ import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
 import io.flutter.plugin.common.PluginRegistry.Registrar
 
-class InAppUpdatePlugin(private val activity: Activity) : MethodCallHandler,
+class InAppUpdatePlugin(private val registrar: Registrar) : MethodCallHandler,
     PluginRegistry.ActivityResultListener, Application.ActivityLifecycleCallbacks {
 
     companion object {
         @JvmStatic
         fun registerWith(registrar: Registrar) {
             val channel = MethodChannel(registrar.messenger(), "in_app_update")
-            val instance = InAppUpdatePlugin(registrar.activity())
-            registrar.addActivityResultListener(instance)
-            registrar.activity().application.registerActivityLifecycleCallbacks(instance)
+            val instance = InAppUpdatePlugin(registrar)
             channel.setMethodCallHandler(instance)
         }
 
@@ -35,12 +34,7 @@ class InAppUpdatePlugin(private val activity: Activity) : MethodCallHandler,
 
     private var updateResult: Result? = null
     private var appUpdateInfo: AppUpdateInfo? = null
-
-    // Creates instance of the manager.
-    private val appUpdateManager by lazy {
-        AppUpdateManagerFactory.create(activity)
-    }
-
+    private var appUpdateManager: AppUpdateManager? = null
 
     override fun onMethodCall(call: MethodCall, result: Result) {
         when {
@@ -79,15 +73,23 @@ class InAppUpdatePlugin(private val activity: Activity) : MethodCallHandler,
 
     override fun onActivityResumed(activity: Activity?) {
         appUpdateManager
-            .appUpdateInfo
-            .addOnSuccessListener { appUpdateInfo ->
+            ?.appUpdateInfo
+            ?.addOnSuccessListener { appUpdateInfo ->
                 if (appUpdateInfo.updateAvailability()
                     == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS
                 ) {
-                    appUpdateManager.startUpdateFlowForResult(
+                    requireNotNull(registrar.activity()) {
+                        updateResult?.error(
+                            "in_app_update requires a foreground activity",
+                            null,
+                            null
+                        )
+                        Unit
+                    }
+                    appUpdateManager?.startUpdateFlowForResult(
                         appUpdateInfo,
                         AppUpdateType.IMMEDIATE,
-                        activity,
+                        registrar.activity(),
                         REQUEST_CODE_START_UPDATE
                     )
                 }
@@ -98,12 +100,18 @@ class InAppUpdatePlugin(private val activity: Activity) : MethodCallHandler,
         requireNotNull(appUpdateInfo) {
             result.error("Call checkForUpdate first!", null, null)
         }
+        requireNotNull(registrar.activity()) {
+            result.error("in_app_update requires a foreground activity", null, null)
+        }
+        requireNotNull(appUpdateManager) {
+            result.error("Call checkForUpdate first!", null, null)
+        }
 
         updateResult = result
-        appUpdateManager.startUpdateFlowForResult(
+        appUpdateManager?.startUpdateFlowForResult(
             appUpdateInfo,
             AppUpdateType.IMMEDIATE,
-            activity,
+            registrar.activity(),
             REQUEST_CODE_START_UPDATE
         )
     }
@@ -112,15 +120,21 @@ class InAppUpdatePlugin(private val activity: Activity) : MethodCallHandler,
         requireNotNull(appUpdateInfo) {
             result.error("Call checkForUpdate first!", null, null)
         }
+        requireNotNull(registrar.activity()) {
+            result.error("in_app_update requires a foreground activity", null, null)
+        }
+        requireNotNull(appUpdateManager) {
+            result.error("Call checkForUpdate first!", null, null)
+        }
 
         updateResult = result
-        appUpdateManager.startUpdateFlowForResult(
+        appUpdateManager?.startUpdateFlowForResult(
             appUpdateInfo,
             AppUpdateType.FLEXIBLE,
-            activity,
+            registrar.activity(),
             REQUEST_CODE_START_UPDATE
         )
-        appUpdateManager.registerListener { state ->
+        appUpdateManager?.registerListener { state ->
             if (state.installStatus() == InstallStatus.DOWNLOADED) {
                 result.success(null)
             } else if (state.installErrorCode() != null) {
@@ -133,14 +147,28 @@ class InAppUpdatePlugin(private val activity: Activity) : MethodCallHandler,
         requireNotNull(appUpdateInfo) {
             result.error("Call checkForUpdate first!", null, null)
         }
+        requireNotNull(registrar.activity()) {
+            result.error("in_app_update requires a foreground activity", null, null)
+        }
+        requireNotNull(appUpdateManager) {
+            result.error("Call checkForUpdate first!", null, null)
+        }
 
-        appUpdateManager.completeUpdate()
+        appUpdateManager?.completeUpdate()
     }
 
     private fun checkForUpdate(result: Result) {
+        requireNotNull(registrar.activity()) {
+            result.error("in_app_update requires a foreground activity", null, null)
+        }
+
+        registrar.addActivityResultListener(this)
+        registrar.activity().application.registerActivityLifecycleCallbacks(this)
+
+        appUpdateManager = AppUpdateManagerFactory.create(registrar.activity())
 
         // Returns an intent object that you use to check for an update.
-        val appUpdateInfoTask = appUpdateManager.appUpdateInfo
+        val appUpdateInfoTask = appUpdateManager!!.appUpdateInfo
 
         // Checks that the platform will allow the specified type of update.
         appUpdateInfoTask.addOnSuccessListener { info ->
