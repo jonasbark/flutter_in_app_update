@@ -1,3 +1,6 @@
+## 1.1.6
+* Handle cases where no foreground activity is available (#10)
+
 ## 1.1.5
 * Fix Result already submitted exception (#8)
 
