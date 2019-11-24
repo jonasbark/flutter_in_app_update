@@ -2,7 +2,7 @@
 
 Presented by
 
-<img src="https://ffuf.de/assets/img/ffuf-logo.png" width="150">
+<img src="https://ffuf.de/assets/img/shared/ffuf-logo-red.svg" width="150">
 
 https://ffuf.de
 
