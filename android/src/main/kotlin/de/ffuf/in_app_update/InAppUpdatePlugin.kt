@@ -136,9 +136,15 @@ class InAppUpdatePlugin(private val registrar: Registrar) : MethodCallHandler,
         )
         appUpdateManager?.registerListener { state ->
             if (state.installStatus() == InstallStatus.DOWNLOADED) {
-                result.success(null)
+                updateResult?.success(null)
+                updateResult = null
             } else if (state.installErrorCode() != null) {
-                result.error("Error during installation", state.installErrorCode().toString(), null)
+                updateResult?.error(
+                    "Error during installation",
+                    state.installErrorCode().toString(),
+                    null
+                )
+                updateResult = null
             }
         }
     }
