@@ -1,3 +1,6 @@
+## 1.1.7
+* Fix Crashes (#12, #15, #19)
+
 ## 1.1.6
 * Handle cases where no foreground activity is available (#10)
 
