@@ -29,7 +29,7 @@ class InAppUpdatePlugin(private val registrar: Registrar) : MethodCallHandler,
             channel.setMethodCallHandler(instance)
         }
 
-        private const val REQUEST_CODE_START_UPDATE = 1388276
+        private const val REQUEST_CODE_START_UPDATE = 1276
     }
 
     private var updateResult: Result? = null
@@ -37,11 +37,11 @@ class InAppUpdatePlugin(private val registrar: Registrar) : MethodCallHandler,
     private var appUpdateManager: AppUpdateManager? = null
 
     override fun onMethodCall(call: MethodCall, result: Result) {
-        when {
-            call.method == "checkForUpdate" -> checkForUpdate(result)
-            call.method == "performImmediateUpdate" -> performImmediateUpdate(result)
-            call.method == "startFlexibleUpdate" -> startFlexibleUpdate(result)
-            call.method == "completeFlexibleUpdate" -> completeFlexibleUpdate(result)
+        when (call.method) {
+            "checkForUpdate" -> checkForUpdate(result)
+            "performImmediateUpdate" -> performImmediateUpdate(result)
+            "startFlexibleUpdate" -> startFlexibleUpdate(result)
+            "completeFlexibleUpdate" -> completeFlexibleUpdate(result)
             else -> result.notImplemented()
         }
     }
