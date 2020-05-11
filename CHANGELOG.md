@@ -1,4 +1,4 @@
-## 1.1.9
+## 1.1.10
 * Update Dependencies (possible fix for #31)
 * implement to new Flutter plugin format (#29, #27)
 
