@@ -34,3 +34,9 @@ https://developer.android.com/guide/app-bundle/in-app-updates
 ### iOS
 iOS does not offer such a functionality. You might want to look into e.g. https://pub.dev/packages/upgrader. 
 If you call the methods above on a iOS device you'll run into a not-implemented exception.
+
+# Troubleshooting
+
+## Getting ERROR_API_NOT_AVAILABLE error
+Be aware that this plugin cannot be tested locally. It must be installed via Google Play to work. 
+Please check the official documentation about In App Updates from Google.
