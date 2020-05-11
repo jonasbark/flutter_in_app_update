@@ -1,3 +1,7 @@
+## 1.1.9
+* Update Dependencies (possible fix for #31)
+* implement to new Flutter plugin format (#29, #27)
+
 ## 1.1.7
 * Fix Crashes (#12, #15, #19)
 

@@ -5,12 +5,14 @@ import android.app.Activity.RESULT_OK
 import android.app.Application
 import android.content.Intent
 import android.os.Bundle
+import androidx.annotation.NonNull
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
+import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -18,19 +20,36 @@ import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
 import io.flutter.plugin.common.PluginRegistry.Registrar
 
-class InAppUpdatePlugin(private val registrar: Registrar) : MethodCallHandler,
+class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
     PluginRegistry.ActivityResultListener, Application.ActivityLifecycleCallbacks {
 
     companion object {
         @JvmStatic
         fun registerWith(registrar: Registrar) {
             val channel = MethodChannel(registrar.messenger(), "in_app_update")
-            val instance = InAppUpdatePlugin(registrar)
+            val instance = InAppUpdatePlugin()
+            instance.registrar = registrar
             channel.setMethodCallHandler(instance)
         }
 
         private const val REQUEST_CODE_START_UPDATE = 1276
     }
+
+    private lateinit var channel: MethodChannel
+    private lateinit var registrar: Registrar
+
+    override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+        channel = MethodChannel(
+            flutterPluginBinding.binaryMessenger,
+            "in_app_update"
+        )
+        channel.setMethodCallHandler(this)
+    }
+
+    override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+        channel.setMethodCallHandler(null)
+    }
+
 
     private var updateResult: Result? = null
     private var appUpdateInfo: AppUpdateInfo? = null
@@ -96,17 +115,7 @@ class InAppUpdatePlugin(private val registrar: Registrar) : MethodCallHandler,
             }
     }
 
-    private fun performImmediateUpdate(result: Result) {
-        requireNotNull(appUpdateInfo) {
-            result.error("Call checkForUpdate first!", null, null)
-        }
-        requireNotNull(registrar.activity()) {
-            result.error("in_app_update requires a foreground activity", null, null)
-        }
-        requireNotNull(appUpdateManager) {
-            result.error("Call checkForUpdate first!", null, null)
-        }
-
+    private fun performImmediateUpdate(result: Result) = checkAppState(result) {
         updateResult = result
         appUpdateManager?.startUpdateFlowForResult(
             appUpdateInfo,
@@ -116,7 +125,10 @@ class InAppUpdatePlugin(private val registrar: Registrar) : MethodCallHandler,
         )
     }
 
-    private fun startFlexibleUpdate(result: Result) {
+    private fun checkAppState(result: Result, block: () -> Unit) {
+        require(this::registrar.isInitialized) {
+            result.error("in_app_update requires a foreground activity", null, null)
+        }
         requireNotNull(appUpdateInfo) {
             result.error("Call checkForUpdate first!", null, null)
         }
@@ -126,6 +138,10 @@ class InAppUpdatePlugin(private val registrar: Registrar) : MethodCallHandler,
         requireNotNull(appUpdateManager) {
             result.error("Call checkForUpdate first!", null, null)
         }
+        block()
+    }
+
+    private fun startFlexibleUpdate(result: Result) = checkAppState(result) {
 
         updateResult = result
         appUpdateManager?.startUpdateFlowForResult(
@@ -149,21 +165,14 @@ class InAppUpdatePlugin(private val registrar: Registrar) : MethodCallHandler,
         }
     }
 
-    private fun completeFlexibleUpdate(result: Result) {
-        requireNotNull(appUpdateInfo) {
-            result.error("Call checkForUpdate first!", null, null)
-        }
-        requireNotNull(registrar.activity()) {
-            result.error("in_app_update requires a foreground activity", null, null)
-        }
-        requireNotNull(appUpdateManager) {
-            result.error("Call checkForUpdate first!", null, null)
-        }
-
+    private fun completeFlexibleUpdate(result: Result) = checkAppState(result) {
         appUpdateManager?.completeUpdate()
     }
 
     private fun checkForUpdate(result: Result) {
+        require(this::registrar.isInitialized) {
+            result.error("in_app_update requires a foreground activity", null, null)
+        }
         requireNotNull(registrar.activity()) {
             result.error("in_app_update requires a foreground activity", null, null)
         }
