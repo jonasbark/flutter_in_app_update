@@ -13,22 +13,37 @@ import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
-import io.flutter.plugin.common.PluginRegistry.Registrar
+
+interface ActivityProvider {
+    fun addActivityResultListener(callback: PluginRegistry.ActivityResultListener)
+    fun activity(): Activity?
+}
 
 class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
-    PluginRegistry.ActivityResultListener, Application.ActivityLifecycleCallbacks {
+    PluginRegistry.ActivityResultListener, Application.ActivityLifecycleCallbacks, ActivityAware {
 
     companion object {
         @JvmStatic
-        fun registerWith(registrar: Registrar) {
+        fun registerWith(registrar: PluginRegistry.Registrar) {
             val channel = MethodChannel(registrar.messenger(), "in_app_update")
             val instance = InAppUpdatePlugin()
-            instance.registrar = registrar
+            instance.activityProvider = object : ActivityProvider {
+                override fun addActivityResultListener(callback: PluginRegistry.ActivityResultListener) {
+                    registrar.addActivityResultListener(callback)
+                }
+
+                override fun activity(): Activity? {
+                    return registrar.activity()
+                }
+
+            }
             channel.setMethodCallHandler(instance)
         }
 
@@ -36,7 +51,6 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
     }
 
     private lateinit var channel: MethodChannel
-    private lateinit var registrar: Registrar
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(
@@ -50,6 +64,7 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
         channel.setMethodCallHandler(null)
     }
 
+    private var activityProvider: ActivityProvider? = null
 
     private var updateResult: Result? = null
     private var appUpdateInfo: AppUpdateInfo? = null
@@ -78,6 +93,39 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
         return false
     }
 
+
+    override fun onAttachedToActivity(activityPluginBinding: ActivityPluginBinding) {
+        activityProvider = object : ActivityProvider {
+            override fun addActivityResultListener(callback: PluginRegistry.ActivityResultListener) {
+                activityPluginBinding.addActivityResultListener(callback)
+            }
+
+            override fun activity(): Activity? {
+                return activityPluginBinding.activity
+            }
+        }
+    }
+
+    override fun onDetachedFromActivityForConfigChanges() {
+        activityProvider = null
+    }
+
+    override fun onReattachedToActivityForConfigChanges(activityPluginBinding: ActivityPluginBinding) {
+        activityProvider = object : ActivityProvider {
+            override fun addActivityResultListener(callback: PluginRegistry.ActivityResultListener) {
+                activityPluginBinding.addActivityResultListener(callback)
+            }
+
+            override fun activity(): Activity? {
+                return activityPluginBinding.activity
+            }
+        }
+    }
+
+    override fun onDetachedFromActivity() {
+        activityProvider = null
+    }
+
     override fun onActivityCreated(activity: Activity?, savedInstanceState: Bundle?) {}
 
     override fun onActivityPaused(activity: Activity?) {}
@@ -97,7 +145,7 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
                 if (appUpdateInfo.updateAvailability()
                     == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS
                 ) {
-                    requireNotNull(registrar.activity()) {
+                    requireNotNull(activityProvider?.activity()) {
                         updateResult?.error(
                             "in_app_update requires a foreground activity",
                             null,
@@ -108,7 +156,7 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
                     appUpdateManager?.startUpdateFlowForResult(
                         appUpdateInfo,
                         AppUpdateType.IMMEDIATE,
-                        registrar.activity(),
+                        activityProvider?.activity(),
                         REQUEST_CODE_START_UPDATE
                     )
                 }
@@ -120,19 +168,16 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
         appUpdateManager?.startUpdateFlowForResult(
             appUpdateInfo,
             AppUpdateType.IMMEDIATE,
-            registrar.activity(),
+            activityProvider?.activity(),
             REQUEST_CODE_START_UPDATE
         )
     }
 
     private fun checkAppState(result: Result, block: () -> Unit) {
-        require(this::registrar.isInitialized) {
-            result.error("in_app_update requires a foreground activity", null, null)
-        }
         requireNotNull(appUpdateInfo) {
             result.error("Call checkForUpdate first!", null, null)
         }
-        requireNotNull(registrar.activity()) {
+        requireNotNull(activityProvider?.activity()) {
             result.error("in_app_update requires a foreground activity", null, null)
         }
         requireNotNull(appUpdateManager) {
@@ -147,7 +192,7 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
         appUpdateManager?.startUpdateFlowForResult(
             appUpdateInfo,
             AppUpdateType.FLEXIBLE,
-            registrar.activity(),
+            activityProvider?.activity(),
             REQUEST_CODE_START_UPDATE
         )
         appUpdateManager?.registerListener { state ->
@@ -170,17 +215,14 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
     }
 
     private fun checkForUpdate(result: Result) {
-        require(this::registrar.isInitialized) {
-            result.error("in_app_update requires a foreground activity", null, null)
-        }
-        requireNotNull(registrar.activity()) {
+        requireNotNull(activityProvider?.activity()) {
             result.error("in_app_update requires a foreground activity", null, null)
         }
 
-        registrar.addActivityResultListener(this)
-        registrar.activity().application.registerActivityLifecycleCallbacks(this)
+        activityProvider?.addActivityResultListener(this)
+        activityProvider?.activity()?.application?.registerActivityLifecycleCallbacks(this)
 
-        appUpdateManager = AppUpdateManagerFactory.create(registrar.activity())
+        appUpdateManager = AppUpdateManagerFactory.create(activityProvider?.activity())
 
         // Returns an intent object that you use to check for an update.
         val appUpdateInfoTask = appUpdateManager!!.appUpdateInfo
