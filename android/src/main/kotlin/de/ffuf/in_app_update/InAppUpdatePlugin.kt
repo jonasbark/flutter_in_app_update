@@ -145,18 +145,18 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
                 if (appUpdateInfo.updateAvailability()
                     == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS
                 ) {
-                    requireNotNull(activityProvider?.activity()) {
+                    val foregroundActivity = activity ?: let {
                         updateResult?.error(
-                            "in_app_update requires a foreground activity",
+                            "in_app_update requires an activity",
                             null,
                             null
                         )
-                        Unit
+                        return@addOnSuccessListener
                     }
                     appUpdateManager?.startUpdateFlowForResult(
                         appUpdateInfo,
                         AppUpdateType.IMMEDIATE,
-                        activityProvider?.activity(),
+                        foregroundActivity,
                         REQUEST_CODE_START_UPDATE
                     )
                 }
