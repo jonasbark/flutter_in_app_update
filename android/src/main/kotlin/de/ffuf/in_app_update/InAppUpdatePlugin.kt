@@ -11,6 +11,7 @@ import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
+import com.google.android.play.core.install.model.InstallErrorCode
 import com.google.android.play.core.install.model.UpdateAvailability
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -67,6 +68,7 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
     private var activityProvider: ActivityProvider? = null
 
     private var updateResult: Result? = null
+    private var appUpdateType: Int? = null
     private var appUpdateInfo: AppUpdateInfo? = null
     private var appUpdateManager: AppUpdateManager? = null
 
@@ -81,7 +83,7 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
-        if (requestCode == REQUEST_CODE_START_UPDATE) {
+        if (requestCode == REQUEST_CODE_START_UPDATE && appUpdateType == AppUpdateType.IMMEDIATE) {
             if (resultCode != RESULT_OK) {
                 updateResult?.error("Update failed", resultCode.toString(), null)
             } else {
@@ -144,6 +146,7 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
             ?.addOnSuccessListener { appUpdateInfo ->
                 if (appUpdateInfo.updateAvailability()
                     == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS
+                    && appUpdateType == AppUpdateType.IMMEDIATE
                 ) {
                     requireNotNull(activityProvider?.activity()) {
                         updateResult?.error(
@@ -164,6 +167,7 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
     }
 
     private fun performImmediateUpdate(result: Result) = checkAppState(result) {
+        appUpdateType = AppUpdateType.IMMEDIATE
         updateResult = result
         appUpdateManager?.startUpdateFlowForResult(
             appUpdateInfo,
@@ -187,7 +191,7 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
     }
 
     private fun startFlexibleUpdate(result: Result) = checkAppState(result) {
-
+        appUpdateType = AppUpdateType.FLEXIBLE
         updateResult = result
         appUpdateManager?.startUpdateFlowForResult(
             appUpdateInfo,
@@ -199,7 +203,7 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
             if (state.installStatus() == InstallStatus.DOWNLOADED) {
                 updateResult?.success(null)
                 updateResult = null
-            } else if (state.installErrorCode() != null) {
+            } else if (state.installErrorCode() != InstallErrorCode.NO_ERROR) {
                 updateResult?.error(
                     "Error during installation",
                     state.installErrorCode().toString(),
