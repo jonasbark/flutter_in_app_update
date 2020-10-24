@@ -31,23 +31,6 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
     PluginRegistry.ActivityResultListener, Application.ActivityLifecycleCallbacks, ActivityAware {
 
     companion object {
-        @JvmStatic
-        fun registerWith(registrar: PluginRegistry.Registrar) {
-            val channel = MethodChannel(registrar.messenger(), "in_app_update")
-            val instance = InAppUpdatePlugin()
-            instance.activityProvider = object : ActivityProvider {
-                override fun addActivityResultListener(callback: PluginRegistry.ActivityResultListener) {
-                    registrar.addActivityResultListener(callback)
-                }
-
-                override fun activity(): Activity? {
-                    return registrar.activity()
-                }
-
-            }
-            channel.setMethodCallHandler(instance)
-        }
-
         private const val REQUEST_CODE_START_UPDATE = 1276
     }
 
@@ -55,8 +38,8 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(
-            flutterPluginBinding.binaryMessenger,
-            "in_app_update"
+          flutterPluginBinding.binaryMessenger,
+          "in_app_update"
         )
         channel.setMethodCallHandler(this)
     }
@@ -74,10 +57,10 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
 
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
-            "checkForUpdate" -> checkForUpdate(result)
-            "performImmediateUpdate" -> performImmediateUpdate(result)
-            "startFlexibleUpdate" -> startFlexibleUpdate(result)
-            "completeFlexibleUpdate" -> completeFlexibleUpdate(result)
+          "checkForUpdate" -> checkForUpdate(result)
+          "performImmediateUpdate" -> performImmediateUpdate(result)
+          "startFlexibleUpdate" -> startFlexibleUpdate(result)
+          "completeFlexibleUpdate" -> completeFlexibleUpdate(result)
             else -> result.notImplemented()
         }
     }
@@ -150,17 +133,17 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
                 ) {
                     val foregroundActivity = activity ?: let {
                         updateResult?.error(
-                            "in_app_update requires an activity",
-                            null,
-                            null
+                          "in_app_update requires an activity",
+                          null,
+                          null
                         )
                         return@addOnSuccessListener
                     }
                     appUpdateManager?.startUpdateFlowForResult(
-                        appUpdateInfo,
-                        AppUpdateType.IMMEDIATE,
-                        foregroundActivity,
-                        REQUEST_CODE_START_UPDATE
+                      appUpdateInfo,
+                      AppUpdateType.IMMEDIATE,
+                      foregroundActivity,
+                      REQUEST_CODE_START_UPDATE
                     )
                 }
             }
@@ -170,10 +153,10 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
         appUpdateType = AppUpdateType.IMMEDIATE
         updateResult = result
         appUpdateManager?.startUpdateFlowForResult(
-            appUpdateInfo,
-            AppUpdateType.IMMEDIATE,
-            activityProvider?.activity(),
-            REQUEST_CODE_START_UPDATE
+          appUpdateInfo,
+          AppUpdateType.IMMEDIATE,
+          activityProvider?.activity(),
+          REQUEST_CODE_START_UPDATE
         )
     }
 
@@ -194,10 +177,10 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
         appUpdateType = AppUpdateType.FLEXIBLE
         updateResult = result
         appUpdateManager?.startUpdateFlowForResult(
-            appUpdateInfo,
-            AppUpdateType.FLEXIBLE,
-            activityProvider?.activity(),
-            REQUEST_CODE_START_UPDATE
+          appUpdateInfo,
+          AppUpdateType.FLEXIBLE,
+          activityProvider?.activity(),
+          REQUEST_CODE_START_UPDATE
         )
         appUpdateManager?.registerListener { state ->
             if (state.installStatus() == InstallStatus.DOWNLOADED) {
@@ -205,9 +188,9 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
                 updateResult = null
             } else if (state.installErrorCode() != InstallErrorCode.NO_ERROR) {
                 updateResult?.error(
-                    "Error during installation",
-                    state.installErrorCode().toString(),
-                    null
+                  "Error during installation",
+                  state.installErrorCode().toString(),
+                  null
                 )
                 updateResult = null
             }
@@ -236,21 +219,21 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
             appUpdateInfo = info
             if (info.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
                 result.success(
-                    mapOf(
-                        "updateAvailable" to true,
-                        "immediateAllowed" to info.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE),
-                        "flexibleAllowed" to info.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE),
-                        "availableVersionCode" to info.availableVersionCode()
-                    )
+                  mapOf(
+                    "updateAvailable" to true,
+                    "immediateAllowed" to info.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE),
+                    "flexibleAllowed" to info.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE),
+                    "availableVersionCode" to info.availableVersionCode()
+                  )
                 )
             } else {
                 result.success(
-                    mapOf(
-                        "updateAvailable" to false,
-                        "immediateAllowed" to false,
-                        "flexibleAllowed" to false,
-                        "availableVersionCode" to null
-                    )
+                  mapOf(
+                    "updateAvailable" to false,
+                    "immediateAllowed" to false,
+                    "flexibleAllowed" to false,
+                    "availableVersionCode" to null
+                  )
                 )
             }
         }

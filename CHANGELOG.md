@@ -1,3 +1,6 @@
+## 1.1.13
+* fix MissingPluginException (#49)
+
 ## 1.1.12
 * fix #42
 * fix #28 (thanks @amaurycannesson)
