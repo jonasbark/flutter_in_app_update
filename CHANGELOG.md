@@ -1,3 +1,6 @@
+## 1.1.14
+* fix compilation error on iOS (#50)
+
 ## 1.1.13
 * fix MissingPluginException (#49)
 
