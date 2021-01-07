@@ -1,3 +1,6 @@
+## 1.1.15
+* fix android Gradle version (6.5.+) build error (#55). thanks for https://github.com/mig35
+
 ## 1.1.14
 * fix compilation error on iOS (#50)
 

@@ -111,19 +111,19 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
         activityProvider = null
     }
 
-    override fun onActivityCreated(activity: Activity?, savedInstanceState: Bundle?) {}
+    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
 
-    override fun onActivityPaused(activity: Activity?) {}
+    override fun onActivityPaused(activity: Activity) {}
 
-    override fun onActivityStarted(activity: Activity?) {}
+    override fun onActivityStarted(activity: Activity) {}
 
-    override fun onActivityDestroyed(activity: Activity?) {}
+    override fun onActivityDestroyed(activity: Activity) {}
 
-    override fun onActivitySaveInstanceState(activity: Activity?, outState: Bundle?) {}
+    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
 
-    override fun onActivityStopped(activity: Activity?) {}
+    override fun onActivityStopped(activity: Activity) {}
 
-    override fun onActivityResumed(activity: Activity?) {
+    override fun onActivityResumed(activity: Activity) {
         appUpdateManager
             ?.appUpdateInfo
             ?.addOnSuccessListener { appUpdateInfo ->
@@ -131,18 +131,10 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
                     == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS
                     && appUpdateType == AppUpdateType.IMMEDIATE
                 ) {
-                    val foregroundActivity = activity ?: let {
-                        updateResult?.error(
-                          "in_app_update requires an activity",
-                          null,
-                          null
-                        )
-                        return@addOnSuccessListener
-                    }
                     appUpdateManager?.startUpdateFlowForResult(
                       appUpdateInfo,
                       AppUpdateType.IMMEDIATE,
-                      foregroundActivity,
+                      activity,
                       REQUEST_CODE_START_UPDATE
                     )
                 }
