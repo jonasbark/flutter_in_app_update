@@ -15,19 +15,26 @@ Demonstrates how to use the in_app_update plugin.
   ),
   RaisedButton(
     child: Text('Perform immediate update'),
-    onPressed: () {
-      InAppUpdate.performImmediateUpdate();
-    },
+    onPressed: _updateInfo?.updateAvailability ==
+            UpdateAvailability.updateAvailable
+        ? () {
+            InAppUpdate.performImmediateUpdate()
+                .catchError((e) => _showError(e));
+          }
+        : null,
   ),
   RaisedButton(
     child: Text('Start flexible update'),
-    onPressed: () {
-      InAppUpdate.startFlexibleUpdate().then((_) {
-        setState(() {
-          _flexibleUpdateAvailable = true;
-        });
-      }).catchError((e) => _showError(e));
-    },
+    onPressed: _updateInfo?.updateAvailability ==
+            UpdateAvailability.updateAvailable
+        ? () {
+            InAppUpdate.startFlexibleUpdate().then((_) {
+              setState(() {
+                _flexibleUpdateAvailable = true;
+              });
+            }).catchError((e) => _showError(e));
+          }
+        : null,
   ),
   RaisedButton(
     child: Text('Complete flexible update'),
