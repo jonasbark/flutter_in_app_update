@@ -73,6 +73,7 @@ class InAppUpdate {
 }
 
 class AppUpdateInfo {
+  @Deprecated('Use updateAvailability instead.')
   final bool updateAvailable;
   final bool immediateUpdateAllowed, flexibleUpdateAllowed;
   final int updateAvailability,
