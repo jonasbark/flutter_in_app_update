@@ -15,6 +15,15 @@ class InstallStatus {
   static int get downloaded => 11;
 }
 
+class UpdateAvailability {
+  UpdateAvailability._();
+
+  static int get unknown => 0;
+  static int get updateNotAvailable => 1;
+  static int get updateAvailable => 2;
+  static int get developerTriggeredUpdateInProgress => 3;
+}
+
 class InAppUpdate {
   static const MethodChannel _channel = const MethodChannel('in_app_update');
 
@@ -26,7 +35,8 @@ class InAppUpdate {
     final result = await _channel.invokeMethod('checkForUpdate');
 
     return AppUpdateInfo(
-      result['updateAvailable'],
+      result['updateAvailability'] == UpdateAvailability.updateAvailable,
+      result['updateAvailability'],
       result['immediateAllowed'],
       result['flexibleAllowed'],
       result['availableVersionCode'],
@@ -63,8 +73,10 @@ class InAppUpdate {
 }
 
 class AppUpdateInfo {
-  final bool updateAvailable, immediateUpdateAllowed, flexibleUpdateAllowed;
-  final int availableVersionCode,
+  final bool updateAvailable;
+  final bool immediateUpdateAllowed, flexibleUpdateAllowed;
+  final int updateAvailability,
+      availableVersionCode,
       installStatus,
       clientVersionStalenessDays,
       updatePriority;
@@ -72,6 +84,7 @@ class AppUpdateInfo {
 
   AppUpdateInfo(
     this.updateAvailable,
+    this.updateAvailability,
     this.immediateUpdateAllowed,
     this.flexibleUpdateAllowed,
     this.availableVersionCode,
@@ -86,7 +99,7 @@ class AppUpdateInfo {
       identical(this, other) ||
       other is AppUpdateInfo &&
           runtimeType == other.runtimeType &&
-          updateAvailable == other.updateAvailable &&
+          updateAvailability == other.updateAvailability &&
           immediateUpdateAllowed == other.immediateUpdateAllowed &&
           flexibleUpdateAllowed == other.flexibleUpdateAllowed &&
           availableVersionCode == other.availableVersionCode &&
@@ -97,7 +110,7 @@ class AppUpdateInfo {
 
   @override
   int get hashCode =>
-      updateAvailable.hashCode ^
+      updateAvailability.hashCode ^
       immediateUpdateAllowed.hashCode ^
       flexibleUpdateAllowed.hashCode ^
       availableVersionCode.hashCode ^
@@ -107,7 +120,7 @@ class AppUpdateInfo {
       updatePriority.hashCode;
 
   @override
-  String toString() => 'InAppUpdateState{updateAvailable: $updateAvailable, '
+  String toString() => 'InAppUpdateState{updateAvailability: $updateAvailability, '
       'immediateUpdateAllowed: $immediateUpdateAllowed, '
       'flexibleUpdateAllowed: $flexibleUpdateAllowed, '
       'availableVersionCode: $availableVersionCode, '

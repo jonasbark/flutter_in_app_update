@@ -211,7 +211,7 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
             appUpdateInfo = info
             result.success(
                   mapOf(
-                    "updateAvailable" to (info.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE),
+                    "updateAvailability" to info.updateAvailability(),
                     "immediateAllowed" to info.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE),
                     "flexibleAllowed" to info.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE),
                     "availableVersionCode" to info.availableVersionCode(),
