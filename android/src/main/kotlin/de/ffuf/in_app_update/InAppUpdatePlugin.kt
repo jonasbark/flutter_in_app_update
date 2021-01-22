@@ -209,25 +209,18 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
         // Checks that the platform will allow the specified type of update.
         appUpdateInfoTask.addOnSuccessListener { info ->
             appUpdateInfo = info
-            if (info.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
-                result.success(
+            result.success(
                   mapOf(
-                    "updateAvailable" to true,
+                    "updateAvailable" to (info.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE),
                     "immediateAllowed" to info.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE),
                     "flexibleAllowed" to info.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE),
-                    "availableVersionCode" to info.availableVersionCode()
+                    "availableVersionCode" to info.availableVersionCode(),
+                    "installStatus" to info.installStatus(),
+                    "packageName" to info.packageName(),
+                    "clientVersionStalenessDays" to info.clientVersionStalenessDays(),
+                    "updatePriority" to info.updatePriority()
                   )
-                )
-            } else {
-                result.success(
-                  mapOf(
-                    "updateAvailable" to false,
-                    "immediateAllowed" to false,
-                    "flexibleAllowed" to false,
-                    "availableVersionCode" to null
-                  )
-                )
-            }
+            )
         }
         appUpdateInfoTask.addOnFailureListener {
             result.error(it.message, null, null)
