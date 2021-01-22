@@ -66,10 +66,12 @@ class _MyAppState extends State<MyApp> {
                 child: Text('Start flexible update'),
                 onPressed: _updateInfo?.updateAvailable == true
                     ? () {
-                        InAppUpdate.startFlexibleUpdate().then((_) {
-                          setState(() {
-                            _flexibleUpdateAvailable = true;
-                          });
+                        InAppUpdate.startFlexibleUpdate().then((result) {
+                          if (result == AppUpdateResult.success) {
+                            setState(() {
+                              _flexibleUpdateAvailable = true;
+                            });
+                          }
                         }).catchError((e) => _showError(e));
                       }
                     : null,
