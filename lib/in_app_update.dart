@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 
 class InstallStatus {
+  InstallStatus._();
+
   static int get unknown => 0;
   static int get pending => 1;
   static int get downloading => 2;
