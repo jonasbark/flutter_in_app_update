@@ -24,6 +24,17 @@ class UpdateAvailability {
   static int get developerTriggeredUpdateInProgress => 3;
 }
 
+enum AppUpdateResult {
+  /// The user has accepted the update. For immediate updates, you might not receive this callback because the update should already be completed by Google Play by the time the control is given back to your app.
+  success,
+
+  /// The user has denied or cancelled the update.
+  userDeniedUpdate,
+
+  /// Some other error prevented either the user from providing consent or the update to proceed.
+  inAppUpdateFailed,
+}
+
 class InAppUpdate {
   static const MethodChannel _channel = const MethodChannel('in_app_update');
 
@@ -50,8 +61,19 @@ class InAppUpdate {
   /// Performs an immediate update that is entirely handled by the Play API.
   ///
   /// [checkForUpdate] has to be called first to be able to run this.
-  static Future<void> performImmediateUpdate() async {
-    return await _channel.invokeMethod('performImmediateUpdate');
+  static Future<AppUpdateResult> performImmediateUpdate() async {
+    try {
+      await _channel.invokeMethod('performImmediateUpdate');
+      return AppUpdateResult.success;
+    } on PlatformException catch (e) {
+      if (e.code == 'USER_DENIED_UPDATE') {
+        return AppUpdateResult.userDeniedUpdate;
+      } else if (e.code == 'IN_APP_UPDATE_FAILED') {
+        return AppUpdateResult.inAppUpdateFailed;
+      }
+
+      throw e;
+    }
   }
 
   /// Starts the download of the app update.
@@ -61,8 +83,19 @@ class InAppUpdate {
   /// [completeFlexibleUpdate] can be called to install the update.
   ///
   /// [checkForUpdate] has to be called first to be able to run this.
-  static Future<void> startFlexibleUpdate() async {
-    return await _channel.invokeMethod('startFlexibleUpdate');
+  static Future<AppUpdateResult> startFlexibleUpdate() async {
+    try {
+      await _channel.invokeMethod('startFlexibleUpdate');
+      return AppUpdateResult.success;
+    } on PlatformException catch (e) {
+      if (e.code == 'USER_DENIED_UPDATE') {
+        return AppUpdateResult.userDeniedUpdate;
+      } else if (e.code == 'IN_APP_UPDATE_FAILED') {
+        return AppUpdateResult.inAppUpdateFailed;
+      }
+
+      throw e;
+    }
   }
 
   /// Installs the update downloaded via [startFlexibleUpdate].

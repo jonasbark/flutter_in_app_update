@@ -71,10 +71,12 @@ class _MyAppState extends State<MyApp> {
                 onPressed: _updateInfo?.updateAvailability ==
                         UpdateAvailability.updateAvailable
                     ? () {
-                        InAppUpdate.startFlexibleUpdate().then((_) {
-                          setState(() {
-                            _flexibleUpdateAvailable = true;
-                          });
+                        InAppUpdate.startFlexibleUpdate().then((result) {
+                          if (result == AppUpdateResult.success) {
+                            setState(() {
+                              _flexibleUpdateAvailable = true;
+                            });
+                          }
                         }).catchError((e) => _showError(e));
                       }
                     : null,
