@@ -1,3 +1,8 @@
+## 1.1.16
+* Expose more fields to access, added `updateAvailability`, `installStatus`, `clientVersionStalenessDays` and `updatePriority`. (#40)
+* Introduce `UpdateAvailability`  and `InstallStatus` for constants.
+* Deprecate `updateAvailable` and replace with `updateAvailability` instead.
+
 ## 1.1.15
 * fix android Gradle version (6.5.+) build error (#55). thanks for https://github.com/mig35
 

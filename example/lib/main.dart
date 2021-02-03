@@ -32,7 +32,9 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _showError(dynamic exception) {
-    _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text(exception.toString())));
+    _scaffoldKey.currentState.showSnackBar(
+      SnackBar(content: Text(exception.toString())),
+    );
   }
 
   @override
@@ -56,15 +58,18 @@ class _MyAppState extends State<MyApp> {
               ),
               RaisedButton(
                 child: Text('Perform immediate update'),
-                onPressed: _updateInfo?.updateAvailable == true
+                onPressed: _updateInfo?.updateAvailability ==
+                        UpdateAvailability.updateAvailable
                     ? () {
-                        InAppUpdate.performImmediateUpdate().catchError((e) => _showError(e));
+                        InAppUpdate.performImmediateUpdate()
+                            .catchError((e) => _showError(e));
                       }
                     : null,
               ),
               RaisedButton(
                 child: Text('Start flexible update'),
-                onPressed: _updateInfo?.updateAvailable == true
+                onPressed: _updateInfo?.updateAvailability ==
+                        UpdateAvailability.updateAvailable
                     ? () {
                         InAppUpdate.startFlexibleUpdate().then((_) {
                           setState(() {
@@ -80,7 +85,9 @@ class _MyAppState extends State<MyApp> {
                     ? null
                     : () {
                         InAppUpdate.completeFlexibleUpdate().then((_) {
-                          _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text('Success!')));
+                          _scaffoldKey.currentState.showSnackBar(
+                            SnackBar(content: Text('Success!')),
+                          );
                         }).catchError((e) => _showError(e));
                       },
               )

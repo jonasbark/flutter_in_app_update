@@ -5,3 +5,9 @@
 .pub/
 
 build/
+.flutter-plugins-dependencies
+
+**/.idea/**
+!**/.idea/runConfigurations/
+!**/.idea/runConfigurations/*
+
