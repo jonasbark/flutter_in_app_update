@@ -82,14 +82,12 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
             }else if (appUpdateType == AppUpdateType.FLEXIBLE) {
                 if (resultCode == RESULT_CANCELED) {
                     updateResult?.error("USER_DENIED_UPDATE", resultCode.toString(), null)
-                }
-                else if (resultCode == RESULT_OK) {
-                    updateResult?.success(null)
+                    updateResult = null
                 }
                 else if (resultCode == ActivityResult.RESULT_IN_APP_UPDATE_FAILED) {
                     updateResult?.error("IN_APP_UPDATE_FAILED", resultCode.toString(), null)
+                    updateResult = null
                 }
-                updateResult = null
                 return true
             }
         }
