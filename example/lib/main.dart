@@ -11,7 +11,8 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  AppUpdateInfo _updateInfo;
+
+  AppUpdateInfo? _updateInfo;
 
   GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey();
 
@@ -28,13 +29,15 @@ class _MyAppState extends State<MyApp> {
       setState(() {
         _updateInfo = info;
       });
-    }).catchError((e) => _showError(e));
+    }).catchError((e) => showSnack(e.toString())); 
   }
-
-  void _showError(dynamic exception) {
-    _scaffoldKey.currentState.showSnackBar(
-      SnackBar(content: Text(exception.toString())),
-    );
+  
+  void showSnack (String text) {
+    if(_scaffoldKey.currentContext != null) {
+      ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(
+          SnackBar(content: Text(text))
+      );
+    }
   }
 
   @override
@@ -52,21 +55,21 @@ class _MyAppState extends State<MyApp> {
               Center(
                 child: Text('Update info: $_updateInfo'),
               ),
-              RaisedButton(
+              ElevatedButton(
                 child: Text('Check for Update'),
                 onPressed: () => checkForUpdate(),
               ),
-              RaisedButton(
+              ElevatedButton(
                 child: Text('Perform immediate update'),
                 onPressed: _updateInfo?.updateAvailability ==
                         UpdateAvailability.updateAvailable
                     ? () {
                         InAppUpdate.performImmediateUpdate()
-                            .catchError((e) => _showError(e));
+                            .catchError((e) => showSnack(e.toString()));
                       }
                     : null,
               ),
-              RaisedButton(
+              ElevatedButton(
                 child: Text('Start flexible update'),
                 onPressed: _updateInfo?.updateAvailability ==
                         UpdateAvailability.updateAvailable
@@ -75,20 +78,18 @@ class _MyAppState extends State<MyApp> {
                           setState(() {
                             _flexibleUpdateAvailable = true;
                           });
-                        }).catchError((e) => _showError(e));
+                        }).catchError((e) => showSnack(e.toString()));
                       }
                     : null,
               ),
-              RaisedButton(
+              ElevatedButton(
                 child: Text('Complete flexible update'),
                 onPressed: !_flexibleUpdateAvailable
                     ? null
                     : () {
                         InAppUpdate.completeFlexibleUpdate().then((_) {
-                          _scaffoldKey.currentState.showSnackBar(
-                            SnackBar(content: Text('Success!')),
-                          );
-                        }).catchError((e) => _showError(e));
+                          showSnack("Success!");
+                        }).catchError((e) => showSnack(e.toString()));
                       },
               )
             ],

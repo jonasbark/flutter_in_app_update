@@ -35,7 +35,6 @@ class InAppUpdate {
     final result = await _channel.invokeMethod('checkForUpdate');
 
     return AppUpdateInfo(
-      result['updateAvailability'] == UpdateAvailability.updateAvailable,
       result['updateAvailability'],
       result['immediateAllowed'],
       result['flexibleAllowed'],
@@ -73,18 +72,15 @@ class InAppUpdate {
 }
 
 class AppUpdateInfo {
-  @Deprecated('Use updateAvailability instead.')
-  final bool updateAvailable;
+  final int updateAvailability;
   final bool immediateUpdateAllowed, flexibleUpdateAllowed;
-  final int updateAvailability,
-      availableVersionCode,
-      installStatus,
-      clientVersionStalenessDays,
-      updatePriority;
+  final int? availableVersionCode;
+  final int installStatus;
   final String packageName;
+  final int updatePriority;
+  final int? clientVersionStalenessDays;
 
   AppUpdateInfo(
-    this.updateAvailable,
     this.updateAvailability,
     this.immediateUpdateAllowed,
     this.flexibleUpdateAllowed,

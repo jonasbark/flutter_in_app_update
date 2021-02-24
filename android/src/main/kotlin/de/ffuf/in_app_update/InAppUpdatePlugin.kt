@@ -214,10 +214,10 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
                     "updateAvailability" to info.updateAvailability(),
                     "immediateAllowed" to info.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE),
                     "flexibleAllowed" to info.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE),
-                    "availableVersionCode" to info.availableVersionCode(),
+                    "availableVersionCode" to info.availableVersionCode(), //Nullable according to docs
                     "installStatus" to info.installStatus(),
                     "packageName" to info.packageName(),
-                    "clientVersionStalenessDays" to info.clientVersionStalenessDays(),
+                    "clientVersionStalenessDays" to info.clientVersionStalenessDays(), //Nullable according to docs
                     "updatePriority" to info.updatePriority()
                   )
             )
