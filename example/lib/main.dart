@@ -11,17 +11,11 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
   AppUpdateInfo? _updateInfo;
 
   GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey();
 
   bool _flexibleUpdateAvailable = false;
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> checkForUpdate() async {
@@ -29,14 +23,15 @@ class _MyAppState extends State<MyApp> {
       setState(() {
         _updateInfo = info;
       });
-    }).catchError((e) => showSnack(e.toString())); 
+    }).catchError((e) {
+      showSnack(e.toString());
+    });
   }
-  
-  void showSnack (String text) {
-    if(_scaffoldKey.currentContext != null) {
-      ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(
-          SnackBar(content: Text(text))
-      );
+
+  void showSnack(String text) {
+    if (_scaffoldKey.currentContext != null) {
+      ScaffoldMessenger.of(_scaffoldKey.currentContext!)
+          .showSnackBar(SnackBar(content: Text(text)));
     }
   }
 
@@ -78,7 +73,9 @@ class _MyAppState extends State<MyApp> {
                           setState(() {
                             _flexibleUpdateAvailable = true;
                           });
-                        }).catchError((e) => showSnack(e.toString()));
+                        }).catchError((e) {
+                          showSnack(e.toString());
+                        });
                       }
                     : null,
               ),
@@ -89,7 +86,9 @@ class _MyAppState extends State<MyApp> {
                     : () {
                         InAppUpdate.completeFlexibleUpdate().then((_) {
                           showSnack("Success!");
-                        }).catchError((e) => showSnack(e.toString()));
+                        }).catchError((e) {
+                          showSnack(e.toString());
+                        });
                       },
               )
             ],
