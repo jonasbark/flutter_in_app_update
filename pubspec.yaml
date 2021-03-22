@@ -1,12 +1,12 @@
 name: in_app_update
 description: Enables In App Updates on Android using the official Android APIs.
-version: 1.1.15
+version: 2.0.0
 author: jonas.bark@ffuf.de
 homepage: https://ffuf.de
 repository: https://github.com/feilfeilundfeil/flutter_in_app_update
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: ">=2.12.0 <3.0.0"
   flutter: ">=1.20.0 <2.0.0"
 
 dependencies:

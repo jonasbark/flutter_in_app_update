@@ -1,3 +1,10 @@
+## 2.0.0
+
+* Migrated to null safety (#60)
+* __Breaking__: Replaced `updateAvailable` with `updateAvailability`.
+* Expose more fields to access, added `updateAvailability`, `installStatus`, `clientVersionStalenessDays` and `updatePriority`. (#40)
+* Introduce `UpdateAvailability`  and `InstallStatus` for constants.
+
 ## 1.1.15
 * fix android Gradle version (6.5.+) build error (#55). thanks for https://github.com/mig35
 
