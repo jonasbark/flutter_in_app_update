@@ -196,8 +196,8 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
                 updateResult = null
             } else if (state.installErrorCode() != InstallErrorCode.NO_ERROR) {
                 updateResult?.error(
-                  "Error during installation",
                   state.installErrorCode().toString(),
+                  "Error during installation",
                   null
                 )
                 updateResult = null
@@ -239,7 +239,7 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
             )
         }
         appUpdateInfoTask.addOnFailureListener {
-            result.error(it.message, null, null)
+            result.error("TASK_FAILURE", it.message, null)
         }
     }
 }
