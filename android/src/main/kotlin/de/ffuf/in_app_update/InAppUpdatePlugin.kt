@@ -239,7 +239,7 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
             )
         }
         appUpdateInfoTask.addOnFailureListener {
-            result.error("TASK_FAILURE", it.message, null, null)
+            result.error("TASK_FAILURE", it.message, null)
         }
     }
 }
