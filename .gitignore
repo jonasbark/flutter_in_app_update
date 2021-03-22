@@ -11,3 +11,5 @@ build/
 !**/.idea/runConfigurations/
 !**/.idea/runConfigurations/*
 
+example/pubspec.lock
+pubspec.lock
