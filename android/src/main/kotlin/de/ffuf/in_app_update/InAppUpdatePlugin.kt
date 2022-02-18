@@ -1,6 +1,7 @@
 package de.ffuf.in_app_update
 
 import android.app.Activity
+import android.app.Activity.RESULT_CANCELED
 import android.app.Activity.RESULT_OK
 import android.app.Application
 import android.content.Intent
@@ -9,6 +10,7 @@ import androidx.annotation.NonNull
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.install.model.ActivityResult
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.InstallErrorCode
@@ -66,14 +68,28 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
-        if (requestCode == REQUEST_CODE_START_UPDATE && appUpdateType == AppUpdateType.IMMEDIATE) {
-            if (resultCode != RESULT_OK) {
-                updateResult?.error("Update failed", resultCode.toString(), null)
-            } else {
-                updateResult?.success(null)
+        if (requestCode == REQUEST_CODE_START_UPDATE) {
+            if (appUpdateType == AppUpdateType.IMMEDIATE) {
+                if (resultCode == RESULT_CANCELED) {
+                    updateResult?.error("USER_DENIED_UPDATE", resultCode.toString(), null)
+                } else if (resultCode == RESULT_OK) {
+                    updateResult?.success(null)
+                } else if (resultCode == ActivityResult.RESULT_IN_APP_UPDATE_FAILED) {
+                    updateResult?.error("IN_APP_UPDATE_FAILED", "Some other error prevented either the user from providing consent or the update to proceed.", null)
+                }
+                updateResult = null
+                return true
+            }else if (appUpdateType == AppUpdateType.FLEXIBLE) {
+                if (resultCode == RESULT_CANCELED) {
+                    updateResult?.error("USER_DENIED_UPDATE", resultCode.toString(), null)
+                    updateResult = null
+                }
+                else if (resultCode == ActivityResult.RESULT_IN_APP_UPDATE_FAILED) {
+                    updateResult?.error("IN_APP_UPDATE_FAILED", resultCode.toString(), null)
+                    updateResult = null
+                }
+                return true
             }
-            updateResult = null
-            return true
         }
         return false
     }
@@ -154,13 +170,13 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
 
     private fun checkAppState(result: Result, block: () -> Unit) {
         requireNotNull(appUpdateInfo) {
-            result.error("Call checkForUpdate first!", null, null)
+            result.error("REQUIRE_CHECK_FOR_UPDATE", "Call checkForUpdate first!", null)
         }
         requireNotNull(activityProvider?.activity()) {
-            result.error("in_app_update requires a foreground activity", null, null)
+            result.error("REQUIRE_FOREGROUND_ACTIVITY", "in_app_update requires a foreground activity", null)
         }
         requireNotNull(appUpdateManager) {
-            result.error("Call checkForUpdate first!", null, null)
+            result.error("REQUIRE_CHECK_FOR_UPDATE", "Call checkForUpdate first!", null)
         }
         block()
     }
@@ -180,8 +196,8 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
                 updateResult = null
             } else if (state.installErrorCode() != InstallErrorCode.NO_ERROR) {
                 updateResult?.error(
-                  "Error during installation",
                   state.installErrorCode().toString(),
+                  "Error during installation",
                   null
                 )
                 updateResult = null
@@ -195,7 +211,7 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
 
     private fun checkForUpdate(result: Result) {
         requireNotNull(activityProvider?.activity()) {
-            result.error("in_app_update requires a foreground activity", null, null)
+            result.error("REQUIRE_FOREGROUND_ACTIVITY", "in_app_update requires a foreground activity", null)
         }
 
         activityProvider?.addActivityResultListener(this)
@@ -223,7 +239,7 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
             )
         }
         appUpdateInfoTask.addOnFailureListener {
-            result.error(it.message, null, null)
+            result.error("TASK_FAILURE", it.message, null)
         }
     }
 }

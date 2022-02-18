@@ -1,3 +1,7 @@
+## 2.0.1
+* Introduce `AppUpdateResult` to know if update is success, user denied or failed. 
+* Change to return PlatformException with proper error code instead of message only.
+
 ## 2.0.0
 
 * Migrated to null safety (#60)
