@@ -38,8 +38,8 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(
-          flutterPluginBinding.binaryMessenger,
-          "in_app_update"
+            flutterPluginBinding.binaryMessenger,
+            "in_app_update"
         )
         channel.setMethodCallHandler(this)
     }
@@ -57,10 +57,10 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
 
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
-          "checkForUpdate" -> checkForUpdate(result)
-          "performImmediateUpdate" -> performImmediateUpdate(result)
-          "startFlexibleUpdate" -> startFlexibleUpdate(result)
-          "completeFlexibleUpdate" -> completeFlexibleUpdate(result)
+            "checkForUpdate" -> checkForUpdate(result)
+            "performImmediateUpdate" -> performImmediateUpdate(result)
+            "startFlexibleUpdate" -> startFlexibleUpdate(result)
+            "completeFlexibleUpdate" -> completeFlexibleUpdate(result)
             else -> result.notImplemented()
         }
     }
@@ -132,10 +132,10 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
                     && appUpdateType == AppUpdateType.IMMEDIATE
                 ) {
                     appUpdateManager?.startUpdateFlowForResult(
-                      appUpdateInfo,
-                      AppUpdateType.IMMEDIATE,
-                      activity,
-                      REQUEST_CODE_START_UPDATE
+                        appUpdateInfo,
+                        AppUpdateType.IMMEDIATE,
+                        activity,
+                        REQUEST_CODE_START_UPDATE
                     )
                 }
             }
@@ -145,10 +145,10 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
         appUpdateType = AppUpdateType.IMMEDIATE
         updateResult = result
         appUpdateManager?.startUpdateFlowForResult(
-          appUpdateInfo,
-          AppUpdateType.IMMEDIATE,
-          activityProvider?.activity(),
-          REQUEST_CODE_START_UPDATE
+            appUpdateInfo!!,
+            AppUpdateType.IMMEDIATE,
+            activityProvider!!.activity()!!,
+            REQUEST_CODE_START_UPDATE
         )
     }
 
@@ -169,10 +169,10 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
         appUpdateType = AppUpdateType.FLEXIBLE
         updateResult = result
         appUpdateManager?.startUpdateFlowForResult(
-          appUpdateInfo,
-          AppUpdateType.FLEXIBLE,
-          activityProvider?.activity(),
-          REQUEST_CODE_START_UPDATE
+            appUpdateInfo!!,
+            AppUpdateType.FLEXIBLE,
+            activityProvider!!.activity()!!,
+            REQUEST_CODE_START_UPDATE
         )
         appUpdateManager?.registerListener { state ->
             if (state.installStatus() == InstallStatus.DOWNLOADED) {
@@ -180,9 +180,9 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
                 updateResult = null
             } else if (state.installErrorCode() != InstallErrorCode.NO_ERROR) {
                 updateResult?.error(
-                  "Error during installation",
-                  state.installErrorCode().toString(),
-                  null
+                    "Error during installation",
+                    state.installErrorCode().toString(),
+                    null
                 )
                 updateResult = null
             }
@@ -201,7 +201,7 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
         activityProvider?.addActivityResultListener(this)
         activityProvider?.activity()?.application?.registerActivityLifecycleCallbacks(this)
 
-        appUpdateManager = AppUpdateManagerFactory.create(activityProvider?.activity())
+        appUpdateManager = AppUpdateManagerFactory.create(activityProvider!!.activity()!!)
 
         // Returns an intent object that you use to check for an update.
         val appUpdateInfoTask = appUpdateManager!!.appUpdateInfo
@@ -210,7 +210,7 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
         appUpdateInfoTask.addOnSuccessListener { info ->
             appUpdateInfo = info
             result.success(
-                  mapOf(
+                mapOf(
                     "updateAvailability" to info.updateAvailability(),
                     "immediateAllowed" to info.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE),
                     "flexibleAllowed" to info.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE),
@@ -219,7 +219,7 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
                     "packageName" to info.packageName(),
                     "clientVersionStalenessDays" to info.clientVersionStalenessDays(), //Nullable according to docs
                     "updatePriority" to info.updatePriority()
-                  )
+                )
             )
         }
         appUpdateInfoTask.addOnFailureListener {
