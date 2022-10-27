@@ -9,14 +9,14 @@ import 'package:flutter/services.dart';
 class InstallStatus {
   const InstallStatus._();
 
-  static int get unknown => 0;
-  static int get pending => 1;
-  static int get downloading => 2;
-  static int get installing => 3;
-  static int get installed => 4;
-  static int get failed => 5;
-  static int get canceled => 6;
-  static int get downloaded => 11;
+  static const int unknown = 0;
+  static const int pending = 1;
+  static const int downloading = 2;
+  static const int installing = 3;
+  static const int installed = 4;
+  static const int failed = 5;
+  static const int canceled = 6;
+  static const int downloaded = 11;
 }
 
 /// Availability of an update for the requested package.
@@ -26,12 +26,12 @@ class InstallStatus {
 class UpdateAvailability {
   const UpdateAvailability._();
 
-  static int get unknown => 0;
-  static int get updateNotAvailable => 1;
-  static int get updateAvailable => 2;
+  static const int unknown = 0;
+  static const int updateNotAvailable = 1;
+  static const int updateAvailable = 2;
 
   /// An update has been triggered by the developer and is in progress.
-  static int get developerTriggeredUpdateInProgress => 3;
+  static const int developerTriggeredUpdateInProgress = 3;
 }
 
 enum AppUpdateResult {
