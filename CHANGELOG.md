@@ -1,3 +1,6 @@
+## 4.0.1
+* improve documentation (thanks to @enzo-santos)
+
 ## 4.0.0
 * Update dependencies
 * InstallStatus and UpdateAvailability are now enums
