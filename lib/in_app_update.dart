@@ -2,26 +2,28 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 
-class InstallStatus {
-  InstallStatus._();
+enum InstallStatus {
+  unknown(0),
+  pending(1),
+  downloading(2),
+  installing(3),
+  installed(4),
+  failed(5),
+  canceled(6),
+  downloaded(11);
 
-  static int get unknown => 0;
-  static int get pending => 1;
-  static int get downloading => 2;
-  static int get installing => 3;
-  static int get installed => 4;
-  static int get failed => 5;
-  static int get canceled => 6;
-  static int get downloaded => 11;
+  const InstallStatus(this.value);
+  final int value;
 }
 
-class UpdateAvailability {
-  UpdateAvailability._();
+enum UpdateAvailability {
+  unknown(0),
+  updateNotAvailable(1),
+  updateAvailable(2),
+  developerTriggeredUpdateInProgress(3);
 
-  static int get unknown => 0;
-  static int get updateNotAvailable => 1;
-  static int get updateAvailable => 2;
-  static int get developerTriggeredUpdateInProgress => 3;
+  const UpdateAvailability(this.value);
+  final int value;
 }
 
 enum AppUpdateResult {
@@ -46,14 +48,15 @@ class InAppUpdate {
     final result = await _channel.invokeMethod('checkForUpdate');
 
     return AppUpdateInfo(
-      result['updateAvailability'],
-      result['immediateAllowed'],
-      result['flexibleAllowed'],
-      result['availableVersionCode'],
-      result['installStatus'],
-      result['packageName'],
-      result['clientVersionStalenessDays'],
-      result['updatePriority'],
+      updateAvailability:
+          UpdateAvailability.values.firstWhere((element) => element.value == result['updateAvailability']),
+      immediateUpdateAllowed: result['immediateAllowed'],
+      flexibleUpdateAllowed: result['flexibleAllowed'],
+      availableVersionCode: result['availableVersionCode'],
+      installStatus: InstallStatus.values.firstWhere((element) => element.value == result['installStatus']),
+      packageName: result['packageName'],
+      clientVersionStalenessDays: result['clientVersionStalenessDays'],
+      updatePriority: result['updatePriority'],
     );
   }
 
@@ -105,24 +108,24 @@ class InAppUpdate {
 }
 
 class AppUpdateInfo {
-  final int updateAvailability;
+  final UpdateAvailability updateAvailability;
   final bool immediateUpdateAllowed, flexibleUpdateAllowed;
   final int? availableVersionCode;
-  final int installStatus;
+  final InstallStatus installStatus;
   final String packageName;
   final int updatePriority;
   final int? clientVersionStalenessDays;
 
-  AppUpdateInfo(
-    this.updateAvailability,
-    this.immediateUpdateAllowed,
-    this.flexibleUpdateAllowed,
-    this.availableVersionCode,
-    this.installStatus,
-    this.packageName,
-    this.clientVersionStalenessDays,
-    this.updatePriority,
-  );
+  AppUpdateInfo({
+    required this.updateAvailability,
+    required this.immediateUpdateAllowed,
+    required this.flexibleUpdateAllowed,
+    required this.availableVersionCode,
+    required this.installStatus,
+    required this.packageName,
+    required this.clientVersionStalenessDays,
+    required this.updatePriority,
+  });
 
   @override
   bool operator ==(Object other) =>
