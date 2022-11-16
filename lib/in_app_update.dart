@@ -2,6 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 
+/// Status of a download/install.
+///
+/// For more information, see its corresponding page on
+/// [Android Developers](https://developer.android.com/reference/com/google/android/play/core/install/model/InstallStatus.html).
 enum InstallStatus {
   unknown(0),
   pending(1),
@@ -16,6 +20,10 @@ enum InstallStatus {
   final int value;
 }
 
+/// Availability of an update for the requested package.
+///
+/// For more information, see its corresponding page on
+/// [Android Developers](https://developer.android.com/reference/com/google/android/play/core/install/model/UpdateAvailability.html).
 enum UpdateAvailability {
   unknown(0),
   updateNotAvailable(1),
@@ -27,13 +35,16 @@ enum UpdateAvailability {
 }
 
 enum AppUpdateResult {
-  /// The user has accepted the update. For immediate updates, you might not receive this callback because the update should already be completed by Google Play by the time the control is given back to your app.
+  /// The user has accepted the update. For immediate updates, you might not 
+  /// receive this callback because the update should already be completed by 
+  /// Google Play by the time the control is given back to your app.
   success,
 
   /// The user has denied or cancelled the update.
   userDeniedUpdate,
 
-  /// Some other error prevented either the user from providing consent or the update to proceed.
+  /// Some other error prevented either the user from providing consent or the 
+  /// update to proceed.
   inAppUpdateFailed,
 }
 
@@ -101,22 +112,62 @@ class InAppUpdate {
   }
 
   /// Installs the update downloaded via [startFlexibleUpdate].
+  ///
   /// [startFlexibleUpdate] has to be completed successfully.
   static Future<void> completeFlexibleUpdate() async {
     return await _channel.invokeMethod('completeFlexibleUpdate');
   }
 }
 
+/// Contains information about the availability and progress of an app 
+/// update.
+///
+/// For more information, see its corresponding page on
+/// [Android Developers](https://developer.android.com/reference/com/google/android/play/core/appupdate/AppUpdateInfo).
 class AppUpdateInfo {
+
+  /// Whether an update is available for the app.
+  ///
+  /// This is a value from [UpdateAvailability].
   final UpdateAvailability updateAvailability;
-  final bool immediateUpdateAllowed, flexibleUpdateAllowed;
+  
+  /// Whether an immediate update is allowed.
+  final bool immediateUpdateAllowed;
+  
+  /// Whether a flexible update is allowed.
+  final bool flexibleUpdateAllowed;
+  
+  /// The version code of the update.
+  ///
+  /// If no updates are available, this is an arbitrary value.
   final int? availableVersionCode;
+
+  /// The progress status of the update.
+  ///
+  /// This value is defined only if [updateAvailability] is 
+  /// [UpdateAvailability.developerTriggeredUpdateInProgress].
+  ///
+  /// This is a value from [InstallStatus].
   final InstallStatus installStatus;
+
+  /// The package name for the app to be updated.
   final String packageName;
+  
+  /// The in-app update priority for this update, as defined by the developer 
+  /// in the Google Play Developer API.
+  ///
+  /// This value is defined only if [updateAvailability] is 
+  /// [UpdateAvailability.updateAvailable].
   final int updatePriority;
+
+  /// The number of days since the Google Play Store app on the user's device
+  /// has learnt about an available update.
+  ///
+  /// If update is not available, or if staleness information is unavailable,
+  /// this is null.
   final int? clientVersionStalenessDays;
 
-  AppUpdateInfo({
+AppUpdateInfo({
     required this.updateAvailability,
     required this.immediateUpdateAllowed,
     required this.flexibleUpdateAllowed,
