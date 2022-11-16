@@ -1,11 +1,5 @@
 [![pub package](https://img.shields.io/pub/v/in_app_update.svg)](https://pub.dev/packages/in_app_update)
 
-Presented by
-
-<img src="https://ffuf.de/assets/img/shared/ffuf-logo-red.svg" width="150">
-
-https://ffuf.de
-
 Maintained by [Jonas Bark](https://twitter.com/boni2k)
 
 # in_app_update
@@ -39,4 +33,6 @@ If you call the methods above on a iOS device you'll run into a not-implemented 
 
 ## Getting ERROR_API_NOT_AVAILABLE error
 Be aware that this plugin cannot be tested locally. It must be installed via Google Play to work. 
-Please check the official documentation about In App Updates from Google.
+Please check the official documentation about In App Updates from Google:
+
+https://developer.android.com/guide/playcore/in-app-updates/test
