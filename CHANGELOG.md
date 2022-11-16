@@ -1,3 +1,9 @@
+## 4.0.0
+* Update dependencies
+* InstallStatus and UpdateAvailability are now enums
+* update Dart to min 2.17
+* catch SendIntentException caused by the play store update library (fixes #46)
+
 ## 3.0.0
 * Update dependencies
 * Introduce `AppUpdateResult` to know if update is success, user denied or failed. 

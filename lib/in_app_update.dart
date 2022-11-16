@@ -6,32 +6,32 @@ import 'package:flutter/services.dart';
 ///
 /// For more information, see its corresponding page on
 /// [Android Developers](https://developer.android.com/reference/com/google/android/play/core/install/model/InstallStatus.html).
-class InstallStatus {
-  const InstallStatus._();
+enum InstallStatus {
+  unknown(0),
+  pending(1),
+  downloading(2),
+  installing(3),
+  installed(4),
+  failed(5),
+  canceled(6),
+  downloaded(11);
 
-  static const int unknown = 0;
-  static const int pending = 1;
-  static const int downloading = 2;
-  static const int installing = 3;
-  static const int installed = 4;
-  static const int failed = 5;
-  static const int canceled = 6;
-  static const int downloaded = 11;
+  const InstallStatus(this.value);
+  final int value;
 }
 
 /// Availability of an update for the requested package.
 ///
 /// For more information, see its corresponding page on
 /// [Android Developers](https://developer.android.com/reference/com/google/android/play/core/install/model/UpdateAvailability.html).
-class UpdateAvailability {
-  const UpdateAvailability._();
+enum UpdateAvailability {
+  unknown(0),
+  updateNotAvailable(1),
+  updateAvailable(2),
+  developerTriggeredUpdateInProgress(3);
 
-  static const int unknown = 0;
-  static const int updateNotAvailable = 1;
-  static const int updateAvailable = 2;
-
-  /// An update has been triggered by the developer and is in progress.
-  static const int developerTriggeredUpdateInProgress = 3;
+  const UpdateAvailability(this.value);
+  final int value;
 }
 
 enum AppUpdateResult {
@@ -59,14 +59,15 @@ class InAppUpdate {
     final result = await _channel.invokeMethod('checkForUpdate');
 
     return AppUpdateInfo(
-      result['updateAvailability'],
-      result['immediateAllowed'],
-      result['flexibleAllowed'],
-      result['availableVersionCode'],
-      result['installStatus'],
-      result['packageName'],
-      result['clientVersionStalenessDays'],
-      result['updatePriority'],
+      updateAvailability:
+          UpdateAvailability.values.firstWhere((element) => element.value == result['updateAvailability']),
+      immediateUpdateAllowed: result['immediateAllowed'],
+      flexibleUpdateAllowed: result['flexibleAllowed'],
+      availableVersionCode: result['availableVersionCode'],
+      installStatus: InstallStatus.values.firstWhere((element) => element.value == result['installStatus']),
+      packageName: result['packageName'],
+      clientVersionStalenessDays: result['clientVersionStalenessDays'],
+      updatePriority: result['updatePriority'],
     );
   }
 
@@ -124,17 +125,18 @@ class InAppUpdate {
 /// For more information, see its corresponding page on
 /// [Android Developers](https://developer.android.com/reference/com/google/android/play/core/appupdate/AppUpdateInfo).
 class AppUpdateInfo {
+
   /// Whether an update is available for the app.
   ///
   /// This is a value from [UpdateAvailability].
-  final int updateAvailability;
-
+  final UpdateAvailability updateAvailability;
+  
   /// Whether an immediate update is allowed.
   final bool immediateUpdateAllowed;
-
+  
   /// Whether a flexible update is allowed.
   final bool flexibleUpdateAllowed;
-
+  
   /// The version code of the update.
   ///
   /// If no updates are available, this is an arbitrary value.
@@ -146,8 +148,8 @@ class AppUpdateInfo {
   /// [UpdateAvailability.developerTriggeredUpdateInProgress].
   ///
   /// This is a value from [InstallStatus].
-  final int installStatus;
-  
+  final InstallStatus installStatus;
+
   /// The package name for the app to be updated.
   final String packageName;
   
@@ -165,16 +167,16 @@ class AppUpdateInfo {
   /// this is null.
   final int? clientVersionStalenessDays;
 
-  const AppUpdateInfo(
-    this.updateAvailability,
-    this.immediateUpdateAllowed,
-    this.flexibleUpdateAllowed,
-    this.availableVersionCode,
-    this.installStatus,
-    this.packageName,
-    this.clientVersionStalenessDays,
-    this.updatePriority,
-  );
+AppUpdateInfo({
+    required this.updateAvailability,
+    required this.immediateUpdateAllowed,
+    required this.flexibleUpdateAllowed,
+    required this.availableVersionCode,
+    required this.installStatus,
+    required this.packageName,
+    required this.clientVersionStalenessDays,
+    required this.updatePriority,
+  });
 
   @override
   bool operator ==(Object other) =>
