@@ -5,7 +5,9 @@ import android.app.Activity.RESULT_CANCELED
 import android.app.Activity.RESULT_OK
 import android.app.Application
 import android.content.Intent
+import android.content.IntentSender.SendIntentException
 import android.os.Bundle
+import android.util.Log
 import androidx.annotation.NonNull
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManager
@@ -26,7 +28,7 @@ import io.flutter.plugin.common.PluginRegistry
 
 interface ActivityProvider {
     fun addActivityResultListener(callback: PluginRegistry.ActivityResultListener)
-    fun activity(): Activity?
+    fun activity(): Activity
 }
 
 class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
@@ -38,15 +40,12 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
 
     private lateinit var channel: MethodChannel
 
-    override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        channel = MethodChannel(
-            flutterPluginBinding.binaryMessenger,
-            "in_app_update"
-        )
+    override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+        channel = MethodChannel(flutterPluginBinding.binaryMessenger, "in_app_update")
         channel.setMethodCallHandler(this)
     }
 
-    override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
     }
 
@@ -70,23 +69,29 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
         if (requestCode == REQUEST_CODE_START_UPDATE) {
             if (appUpdateType == AppUpdateType.IMMEDIATE) {
-                if (resultCode == RESULT_CANCELED) {
-                    updateResult?.error("USER_DENIED_UPDATE", resultCode.toString(), null)
-                } else if (resultCode == RESULT_OK) {
-                    updateResult?.success(null)
-                } else if (resultCode == ActivityResult.RESULT_IN_APP_UPDATE_FAILED) {
-                    updateResult?.error("IN_APP_UPDATE_FAILED", "Some other error prevented either the user from providing consent or the update to proceed.", null)
+                when (resultCode) {
+                    RESULT_CANCELED -> {
+                        updateResult?.error("USER_DENIED_UPDATE", resultCode.toString(), null)
+                    }
+                    RESULT_OK -> {
+                        updateResult?.success(null)
+                    }
+                    ActivityResult.RESULT_IN_APP_UPDATE_FAILED -> {
+                        updateResult?.error("IN_APP_UPDATE_FAILED", "Some other error prevented either the user from providing consent or the update to proceed.", null)
+                    }
                 }
                 updateResult = null
                 return true
-            }else if (appUpdateType == AppUpdateType.FLEXIBLE) {
-                if (resultCode == RESULT_CANCELED) {
-                    updateResult?.error("USER_DENIED_UPDATE", resultCode.toString(), null)
-                    updateResult = null
-                }
-                else if (resultCode == ActivityResult.RESULT_IN_APP_UPDATE_FAILED) {
-                    updateResult?.error("IN_APP_UPDATE_FAILED", resultCode.toString(), null)
-                    updateResult = null
+            } else if (appUpdateType == AppUpdateType.FLEXIBLE) {
+                when (resultCode) {
+                    RESULT_CANCELED -> {
+                        updateResult?.error("USER_DENIED_UPDATE", resultCode.toString(), null)
+                        updateResult = null
+                    }
+                    ActivityResult.RESULT_IN_APP_UPDATE_FAILED -> {
+                        updateResult?.error("IN_APP_UPDATE_FAILED", resultCode.toString(), null)
+                        updateResult = null
+                    }
                 }
                 return true
             }
@@ -101,7 +106,7 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
                 activityPluginBinding.addActivityResultListener(callback)
             }
 
-            override fun activity(): Activity? {
+            override fun activity(): Activity {
                 return activityPluginBinding.activity
             }
         }
@@ -117,7 +122,7 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
                 activityPluginBinding.addActivityResultListener(callback)
             }
 
-            override fun activity(): Activity? {
+            override fun activity(): Activity {
                 return activityPluginBinding.activity
             }
         }
@@ -147,12 +152,16 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
                     == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS
                     && appUpdateType == AppUpdateType.IMMEDIATE
                 ) {
-                    appUpdateManager?.startUpdateFlowForResult(
-                        appUpdateInfo,
-                        AppUpdateType.IMMEDIATE,
-                        activity,
-                        REQUEST_CODE_START_UPDATE
-                    )
+                    try {
+                        appUpdateManager?.startUpdateFlowForResult(
+                            appUpdateInfo,
+                            AppUpdateType.IMMEDIATE,
+                            activity,
+                            REQUEST_CODE_START_UPDATE
+                        )
+                    } catch (e: SendIntentException) {
+                        Log.e("in_app_update", "Could not start update flow", e)
+                    }
                 }
             }
     }
@@ -163,7 +172,7 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
         appUpdateManager?.startUpdateFlowForResult(
             appUpdateInfo!!,
             AppUpdateType.IMMEDIATE,
-            activityProvider!!.activity()!!,
+            activityProvider!!.activity(),
             REQUEST_CODE_START_UPDATE
         )
     }
@@ -187,7 +196,7 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
         appUpdateManager?.startUpdateFlowForResult(
             appUpdateInfo!!,
             AppUpdateType.FLEXIBLE,
-            activityProvider!!.activity()!!,
+            activityProvider!!.activity(),
             REQUEST_CODE_START_UPDATE
         )
         appUpdateManager?.registerListener { state ->
@@ -217,7 +226,7 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
         activityProvider?.addActivityResultListener(this)
         activityProvider?.activity()?.application?.registerActivityLifecycleCallbacks(this)
 
-        appUpdateManager = AppUpdateManagerFactory.create(activityProvider!!.activity()!!)
+        appUpdateManager = AppUpdateManagerFactory.create(activityProvider!!.activity())
 
         // Returns an intent object that you use to check for an update.
         val appUpdateInfoTask = appUpdateManager!!.appUpdateInfo
