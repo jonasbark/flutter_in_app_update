@@ -2,10 +2,10 @@ group 'de.ffuf.in_app_update'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.6.21'
+    ext.kotlin_version = '1.7.21'
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
 
     dependencies {
