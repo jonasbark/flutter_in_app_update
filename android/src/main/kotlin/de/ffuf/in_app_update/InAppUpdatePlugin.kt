@@ -56,12 +56,15 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
     private var appUpdateInfo: AppUpdateInfo? = null
     private var appUpdateManager: AppUpdateManager? = null
 
+    private val flexibleUpdateProgress = 0;
+
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
             "checkForUpdate" -> checkForUpdate(result)
             "performImmediateUpdate" -> performImmediateUpdate(result)
             "startFlexibleUpdate" -> startFlexibleUpdate(result)
             "completeFlexibleUpdate" -> completeFlexibleUpdate(result)
+            "flexibleUpdateProgress" -> getFlexibleUpdateProgress(result)
             else -> result.notImplemented()
         }
     }
@@ -200,13 +203,8 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
             REQUEST_CODE_START_UPDATE
         )
         appUpdateManager?.registerListener { state ->
-            if (state.installStatus() == InstallStatus.DOWNLOADING) {
-                val bytesDownloaded = state.bytesDownloaded()
-                val totalBytesToDownload = state.totalBytesToDownload()
-                updateResult?.success(bytesDownloaded/totalBytesToDownload)
-                // Show update progress bar.
-            } else if (state.installStatus() == InstallStatus.DOWNLOADED) {
-                updateResult?.success(100)
+            if (state.installStatus() == InstallStatus.DOWNLOADED) {
+                updateResult?.success(null)
                 updateResult = null
             } else if (state.installErrorCode() != InstallErrorCode.NO_ERROR) {
                 updateResult?.error(
@@ -217,6 +215,10 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
                 updateResult = null
             }
         }
+    }
+
+    private fun getFlexibleUpdateProgress(result: Result) {
+        result.success(flexibleUpdateProgress)
     }
 
     private fun completeFlexibleUpdate(result: Result) = checkAppState(result) {

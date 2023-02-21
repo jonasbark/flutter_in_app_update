@@ -96,18 +96,9 @@ class InAppUpdate {
   /// [completeFlexibleUpdate] can be called to install the update.
   ///
   /// [checkForUpdate] has to be called first to be able to run this.
-  static Future<AppUpdateResult> startFlexibleUpdate(
-    void Function(int) progressListener,
-  ) async {
+  static Future<AppUpdateResult> startFlexibleUpdate() async {
     try {
-      final progress = await _channel.invokeMethod('startFlexibleUpdate');
-      if (progress != null) {
-        final progressInt = int.tryParse(progress.toString());
-        if (progressInt != null && progressInt < 100) {
-          progressListener(progressInt);
-        }
-        return AppUpdateResult.success;
-      }
+      await _channel.invokeMethod('startFlexibleUpdate');
       return AppUpdateResult.success;
     } on PlatformException catch (e) {
       if (e.code == 'USER_DENIED_UPDATE') {
@@ -118,6 +109,10 @@ class InAppUpdate {
 
       throw e;
     }
+  }
+
+  static Future<int> getFlexibleUpdateProgress() async {
+    return await _channel.invokeMethod('flexibleUpdateProgress');
   }
 
   /// Installs the update downloaded via [startFlexibleUpdate].
