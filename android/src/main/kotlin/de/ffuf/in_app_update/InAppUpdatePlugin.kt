@@ -200,8 +200,13 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
             REQUEST_CODE_START_UPDATE
         )
         appUpdateManager?.registerListener { state ->
-            if (state.installStatus() == InstallStatus.DOWNLOADED) {
-                updateResult?.success(null)
+            if (state.installStatus() == InstallStatus.DOWNLOADING) {
+                val bytesDownloaded = state.bytesDownloaded()
+                val totalBytesToDownload = state.totalBytesToDownload()
+                updateResult?.success(bytesDownloaded/totalBytesToDownload)
+                // Show update progress bar.
+            } else if (state.installStatus() == InstallStatus.DOWNLOADED) {
+                updateResult?.success(100)
                 updateResult = null
             } else if (state.installErrorCode() != InstallErrorCode.NO_ERROR) {
                 updateResult?.error(
