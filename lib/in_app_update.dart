@@ -102,7 +102,7 @@ class InAppUpdate {
     try {
       final progress = await _channel.invokeMethod('startFlexibleUpdate');
       if (progress != null) {
-        final progressInt = int.tryParse(progress);
+        final progressInt = int.tryParse(progress.toString());
         if (progressInt != null && progressInt < 100) {
           progressListener(progressInt);
         }
