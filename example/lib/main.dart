@@ -60,7 +60,10 @@ class _MyAppState extends State<MyApp> {
                         UpdateAvailability.updateAvailable
                     ? () {
                         InAppUpdate.performImmediateUpdate()
-                            .catchError((e) => showSnack(e.toString()));
+                            .catchError((e) {
+                              showSnack(e.toString());
+                             return AppUpdateResult.inAppUpdateFailed;
+                            });
                       }
                     : null,
               ),
