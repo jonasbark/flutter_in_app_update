@@ -8,10 +8,10 @@ import android.content.Intent
 import android.content.IntentSender.SendIntentException
 import android.os.Bundle
 import android.util.Log
-import androidx.annotation.NonNull
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.appupdate.AppUpdateOptions
 import com.google.android.play.core.install.model.ActivityResult
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
@@ -171,8 +171,8 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
         updateResult = result
         appUpdateManager?.startUpdateFlowForResult(
             appUpdateInfo!!,
-            AppUpdateType.IMMEDIATE,
             activityProvider!!.activity(),
+            AppUpdateOptions.defaultOptions(AppUpdateType.IMMEDIATE),
             REQUEST_CODE_START_UPDATE
         )
     }
@@ -195,8 +195,8 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
         updateResult = result
         appUpdateManager?.startUpdateFlowForResult(
             appUpdateInfo!!,
-            AppUpdateType.FLEXIBLE,
             activityProvider!!.activity(),
+            AppUpdateOptions.defaultOptions(AppUpdateType.FLEXIBLE),
             REQUEST_CODE_START_UPDATE
         )
         appUpdateManager?.registerListener { state ->
@@ -238,7 +238,9 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
                 mapOf(
                     "updateAvailability" to info.updateAvailability(),
                     "immediateAllowed" to info.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE),
+                    "immediateAllowedPreconditions" to info.getFailedUpdatePreconditions(AppUpdateOptions.defaultOptions(AppUpdateType.IMMEDIATE)),
                     "flexibleAllowed" to info.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE),
+                    "flexibleAllowedPreconditions" to info.getFailedUpdatePreconditions(AppUpdateOptions.defaultOptions(AppUpdateType.FLEXIBLE)),
                     "availableVersionCode" to info.availableVersionCode(), //Nullable according to docs
                     "installStatus" to info.installStatus(),
                     "packageName" to info.packageName(),

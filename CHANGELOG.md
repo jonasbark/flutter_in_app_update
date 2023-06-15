@@ -1,3 +1,7 @@
+## 4.1.0
+* update Play In-App Update library to 2.10.1, which includes support for Android 14
+* introduce `immediateAllowedPreconditions` and `flexibleAllowedPreconditions` fields to `AppUpdateInfo` to check why an update may not be possible
+
 ## 4.0.1
 * improve documentation (thanks to @enzo-santos)
 
