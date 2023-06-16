@@ -137,13 +137,13 @@ class AppUpdateInfo {
   final bool immediateUpdateAllowed;
 
   /// determine the reason why an update cannot be started
-  final String? immediateAllowedPreconditions;
+  final List<int>? immediateAllowedPreconditions;
 
   /// Whether a flexible update is allowed.
   final bool flexibleUpdateAllowed;
 
   /// determine the reason why an update cannot be started
-  final String? flexibleAllowedPreconditions;
+  final List<int>? flexibleAllowedPreconditions;
 
   /// The version code of the update.
   ///

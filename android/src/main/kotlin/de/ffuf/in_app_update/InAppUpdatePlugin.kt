@@ -238,9 +238,9 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
                 mapOf(
                     "updateAvailability" to info.updateAvailability(),
                     "immediateAllowed" to info.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE),
-                    "immediateAllowedPreconditions" to info.getFailedUpdatePreconditions(AppUpdateOptions.defaultOptions(AppUpdateType.IMMEDIATE)),
+                    "immediateAllowedPreconditions" to info.getFailedUpdatePreconditions(AppUpdateOptions.defaultOptions(AppUpdateType.IMMEDIATE)).toList(),
                     "flexibleAllowed" to info.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE),
-                    "flexibleAllowedPreconditions" to info.getFailedUpdatePreconditions(AppUpdateOptions.defaultOptions(AppUpdateType.FLEXIBLE)),
+                    "flexibleAllowedPreconditions" to info.getFailedUpdatePreconditions(AppUpdateOptions.defaultOptions(AppUpdateType.FLEXIBLE)).toList(),
                     "availableVersionCode" to info.availableVersionCode(), //Nullable according to docs
                     "installStatus" to info.installStatus(),
                     "packageName" to info.packageName(),
