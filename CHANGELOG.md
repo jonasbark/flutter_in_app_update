@@ -1,3 +1,6 @@
+## 4.1.2
+* fix parsing of preconditions
+
 ## 4.1.1
 * fix data type for `immediateAllowedPreconditions` and `flexibleAllowedPreconditions` (fixes #99)
 
