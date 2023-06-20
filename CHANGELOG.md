@@ -1,3 +1,6 @@
+## 4.1.4
+* use kotlin 1.7.10, which is the oldest version supported by the play store update library. You will need to adjust this in your project if you use an older version of kotlin.
+
 ## 4.1.3
 * fix parsing of preconditions
 
