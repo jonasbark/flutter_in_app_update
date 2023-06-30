@@ -50,6 +50,8 @@ enum AppUpdateResult {
 
 class InAppUpdate {
   static const MethodChannel _channel = const MethodChannel('in_app_update');
+  static const EventChannel _installListener =
+      const EventChannel('in_app_update_install_listener');
 
   /// Has to be called before being able to start any update.
   ///
@@ -76,6 +78,10 @@ class InAppUpdate {
       clientVersionStalenessDays: result['clientVersionStalenessDays'],
       updatePriority: result['updatePriority'],
     );
+  }
+
+  static Stream<int> get installUpdateListener {
+    return _installListener.receiveBroadcastStream().cast();
   }
 
   /// Performs an immediate update that is entirely handled by the Play API.
