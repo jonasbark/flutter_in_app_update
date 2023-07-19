@@ -56,26 +56,29 @@ class InAppUpdate {
   /// Returns [AppUpdateInfo], which can be used to decide if
   /// [startFlexibleUpdate] or [performImmediateUpdate] should be called.
   static Future<AppUpdateInfo> checkForUpdate() async {
-    final result = await _channel.invokeMethod('checkForUpdate');
-
-    return AppUpdateInfo(
-      updateAvailability: UpdateAvailability.values.firstWhere(
-          (element) => element.value == result['updateAvailability']),
-      immediateUpdateAllowed: result['immediateAllowed'],
-      immediateAllowedPreconditions: result['immediateAllowedPreconditions']
-          ?.map<int>((e) => e as int)
-          .toList(),
-      flexibleUpdateAllowed: result['flexibleAllowed'],
-      flexibleAllowedPreconditions: result['flexibleAllowedPreconditions']
-          ?.map<int>((e) => e as int)
-          .toList(),
-      availableVersionCode: result['availableVersionCode'],
-      installStatus: InstallStatus.values
-          .firstWhere((element) => element.value == result['installStatus']),
-      packageName: result['packageName'],
-      clientVersionStalenessDays: result['clientVersionStalenessDays'],
-      updatePriority: result['updatePriority'],
-    );
+    try {
+      final result = await _channel.invokeMethod('checkForUpdate');
+      return AppUpdateInfo(
+        updateAvailability: UpdateAvailability.values.firstWhere(
+            (element) => element.value == result['updateAvailability']),
+        immediateUpdateAllowed: result['immediateAllowed'],
+        immediateAllowedPreconditions: result['immediateAllowedPreconditions']
+            ?.map<int>((e) => e as int)
+            .toList(),
+        flexibleUpdateAllowed: result['flexibleAllowed'],
+        flexibleAllowedPreconditions: result['flexibleAllowedPreconditions']
+            ?.map<int>((e) => e as int)
+            .toList(),
+        availableVersionCode: result['availableVersionCode'],
+        installStatus: InstallStatus.values
+            .firstWhere((element) => element.value == result['installStatus']),
+        packageName: result['packageName'],
+        clientVersionStalenessDays: result['clientVersionStalenessDays'],
+        updatePriority: result['updatePriority'],
+      );
+    } on PlatformException catch (e) {
+      throw e;
+    }
   }
 
   /// Performs an immediate update that is entirely handled by the Play API.
