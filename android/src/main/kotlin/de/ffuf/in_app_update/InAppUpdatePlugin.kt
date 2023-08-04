@@ -30,7 +30,8 @@ interface ActivityProvider {
 }
 
 class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
-    PluginRegistry.ActivityResultListener, Application.ActivityLifecycleCallbacks, ActivityAware {
+    PluginRegistry.ActivityResultListener, Application.ActivityLifecycleCallbacks, ActivityAware,
+    EventChannel.StreamHandler {
 
     companion object {
         private const val REQUEST_CODE_START_UPDATE = 1276
@@ -38,20 +39,38 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
 
     private lateinit var channel: MethodChannel
     private lateinit var event: EventChannel
-    private lateinit var installStateStream: InstallStateStream
+    private lateinit var installStateUpdatedListener: InstallStateUpdatedListener
+    private var installStateSink: EventChannel.EventSink? = null
+
+    override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+        installStateSink = events
+    }
+
+    override fun onCancel(arguments: Any?) {
+        installStateSink = null
+    }
+
+    private fun addState(status: Int){
+        installStateSink?.success(status)
+    }
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        channel = MethodChannel(flutterPluginBinding.binaryMessenger, "in_app_update")
+        channel = MethodChannel(flutterPluginBinding.binaryMessenger, "de.ffuf.in_app_update/methods")
         channel.setMethodCallHandler(this)
 
-        event = EventChannel(flutterPluginBinding.binaryMessenger,"in_app_update_install_listener" )
-        installStateStream = InstallStateStream()
-        event.setStreamHandler(installStateStream)
+        event = EventChannel(flutterPluginBinding.binaryMessenger,"de.ffuf.in_app_update/stateEvents" )
+        event.setStreamHandler(this)
+
+        installStateUpdatedListener = InstallStateUpdatedListener { installState ->
+            addState(installState.installStatus())
+        }
+        appUpdateManager?.registerListener(installStateUpdatedListener)
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
         event.setStreamHandler(null)
+        appUpdateManager?.unregisterListener(installStateUpdatedListener)
     }
 
     private var activityProvider: ActivityProvider? = null
@@ -175,10 +194,6 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
         appUpdateType = AppUpdateType.IMMEDIATE
         updateResult = result
 
-        appUpdateManager?.registerListener(InstallStateUpdatedListener { installState ->
-            installStateStream.add(installState.installStatus())
-        })
-
         appUpdateManager?.startUpdateFlowForResult(
             appUpdateInfo!!,
             activityProvider!!.activity(),
@@ -210,11 +225,8 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
             REQUEST_CODE_START_UPDATE
         )
 
-        appUpdateManager?.registerListener(InstallStateUpdatedListener { installState ->
-            installStateStream.add(installState.installStatus())
-        })
-
         appUpdateManager?.registerListener { state ->
+            addState(state.installStatus())
             if (state.installStatus() == InstallStatus.DOWNLOADED) {
                 updateResult?.success(null)
                 updateResult = null
