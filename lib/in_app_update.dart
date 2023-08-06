@@ -81,8 +81,8 @@ class InAppUpdate {
     );
   }
 
-  static Stream<int> get installUpdateListener {
-    return _installListener.receiveBroadcastStream().cast<int>();
+  static Stream<InstallStatus> get installUpdateListener {
+    return _installListener.receiveBroadcastStream().cast<InstallStatus>();
   }
 
   /// Performs an immediate update that is entirely handled by the Play API.
