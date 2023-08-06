@@ -82,7 +82,31 @@ class InAppUpdate {
   }
 
   static Stream<InstallStatus> get installUpdateListener {
-    return _installListener.receiveBroadcastStream().cast<InstallStatus>();
+    return _installListener
+        .receiveBroadcastStream()
+        .cast<int>()
+        .map((int value) {
+      switch (value) {
+        case 0:
+          return InstallStatus.unknown;
+        case 1:
+          return InstallStatus.pending;
+        case 2:
+          return InstallStatus.downloading;
+        case 3:
+          return InstallStatus.installing;
+        case 4:
+          return InstallStatus.installed;
+        case 5:
+          return InstallStatus.failed;
+        case 6:
+          return InstallStatus.canceled;
+        case 11:
+          return InstallStatus.downloaded;
+        default:
+          return InstallStatus.unknown;
+      }
+    });
   }
 
   /// Performs an immediate update that is entirely handled by the Play API.
