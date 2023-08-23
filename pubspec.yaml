@@ -1,6 +1,6 @@
 name: in_app_update
 description: Enables In App Updates on Android using the official Android APIs.
-version: 4.1.4
+version: 4.2.0
 homepage: https://jonasbark.de
 repository: https://github.com/jonasbark/flutter_in_app_update
 
