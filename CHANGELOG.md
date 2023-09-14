@@ -1,3 +1,6 @@
+## 4.2.1
+- Add namespace to support gradle 8 (#105) thanks to @Rexios80
+
 ## 4.2.0
 - added install update listener feature (#103) thanks to @ViniciusSossela
 
