@@ -36,6 +36,7 @@ android {
     lintOptions {
         disable 'InvalidPackage'
     }
+    namespace "de.ffuf.in_app_update"
 }
 
 dependencies {
