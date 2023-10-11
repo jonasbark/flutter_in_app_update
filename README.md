@@ -36,3 +36,6 @@ Be aware that this plugin cannot be tested locally. It must be installed via Goo
 Please check the official documentation about In App Updates from Google:
 
 https://developer.android.com/guide/playcore/in-app-updates/test
+
+## Update does not work on old Android versions
+In App Updates are only available from API Versions >= 21, as mentioned [here](https://developer.android.com/guide/playcore/in-app-updates).
