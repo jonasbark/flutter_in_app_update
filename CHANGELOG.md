@@ -1,3 +1,6 @@
+## 4.2.2
+- Match Kotlin jvm compatibility to java compatibility thanks to @ciriousjoker
+
 ## 4.2.1
 - Add namespace to support gradle 8 (#105) thanks to @Rexios80
 
