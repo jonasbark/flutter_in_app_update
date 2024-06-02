@@ -1,3 +1,6 @@
+## 4.2.3
+- Migrate from jcenter to maven central thanks to @xVemu
+
 ## 4.2.2
 - Match Kotlin jvm compatibility to java compatibility thanks to @ciriousjoker
 
