@@ -17,6 +17,7 @@ enum InstallStatus {
   downloaded(11);
 
   const InstallStatus(this.value);
+
   final int value;
 }
 
@@ -31,6 +32,7 @@ enum UpdateAvailability {
   developerTriggeredUpdateInProgress(3);
 
   const UpdateAvailability(this.value);
+
   final int value;
 }
 
@@ -50,9 +52,9 @@ enum AppUpdateResult {
 
 class InAppUpdate {
   static const MethodChannel _channel =
-      const MethodChannel('de.ffuf.in_app_update/methods');
+  MethodChannel('de.ffuf.in_app_update/methods');
   static const EventChannel _installListener =
-      const EventChannel('de.ffuf.in_app_update/stateEvents');
+  EventChannel('de.ffuf.in_app_update/stateEvents');
 
   /// Has to be called before being able to start any update.
   ///
@@ -63,7 +65,7 @@ class InAppUpdate {
 
     return AppUpdateInfo(
       updateAvailability: UpdateAvailability.values.firstWhere(
-          (element) => element.value == result['updateAvailability']),
+              (element) => element.value == result['updateAvailability']),
       immediateUpdateAllowed: result['immediateAllowed'],
       immediateAllowedPreconditions: result['immediateAllowedPreconditions']
           ?.map<int>((e) => e as int)
@@ -123,7 +125,7 @@ class InAppUpdate {
         return AppUpdateResult.inAppUpdateFailed;
       }
 
-      throw e;
+      rethrow;
     }
   }
 
@@ -145,7 +147,7 @@ class InAppUpdate {
         return AppUpdateResult.inAppUpdateFailed;
       }
 
-      throw e;
+      rethrow;
     }
   }
 
@@ -163,6 +165,19 @@ class InAppUpdate {
 /// For more information, see its corresponding page on
 /// [Android Developers](https://developer.android.com/reference/com/google/android/play/core/appupdate/AppUpdateInfo).
 class AppUpdateInfo {
+  AppUpdateInfo({
+    required this.updateAvailability,
+    required this.immediateUpdateAllowed,
+    required this.immediateAllowedPreconditions,
+    required this.flexibleUpdateAllowed,
+    required this.flexibleAllowedPreconditions,
+    required this.availableVersionCode,
+    required this.installStatus,
+    required this.packageName,
+    required this.clientVersionStalenessDays,
+    required this.updatePriority,
+  });
+
   /// Whether an update is available for the app.
   ///
   /// This is a value from [UpdateAvailability].
@@ -210,35 +225,22 @@ class AppUpdateInfo {
   /// this is null.
   final int? clientVersionStalenessDays;
 
-  AppUpdateInfo({
-    required this.updateAvailability,
-    required this.immediateUpdateAllowed,
-    required this.immediateAllowedPreconditions,
-    required this.flexibleUpdateAllowed,
-    required this.flexibleAllowedPreconditions,
-    required this.availableVersionCode,
-    required this.installStatus,
-    required this.packageName,
-    required this.clientVersionStalenessDays,
-    required this.updatePriority,
-  });
-
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is AppUpdateInfo &&
-          runtimeType == other.runtimeType &&
-          updateAvailability == other.updateAvailability &&
-          immediateUpdateAllowed == other.immediateUpdateAllowed &&
-          immediateAllowedPreconditions ==
-              other.immediateAllowedPreconditions &&
-          flexibleUpdateAllowed == other.flexibleUpdateAllowed &&
-          flexibleAllowedPreconditions == other.flexibleAllowedPreconditions &&
-          availableVersionCode == other.availableVersionCode &&
-          installStatus == other.installStatus &&
-          packageName == other.packageName &&
-          clientVersionStalenessDays == other.clientVersionStalenessDays &&
-          updatePriority == other.updatePriority;
+          other is AppUpdateInfo &&
+              runtimeType == other.runtimeType &&
+              updateAvailability == other.updateAvailability &&
+              immediateUpdateAllowed == other.immediateUpdateAllowed &&
+              immediateAllowedPreconditions ==
+                  other.immediateAllowedPreconditions &&
+              flexibleUpdateAllowed == other.flexibleUpdateAllowed &&
+              flexibleAllowedPreconditions == other.flexibleAllowedPreconditions &&
+              availableVersionCode == other.availableVersionCode &&
+              installStatus == other.installStatus &&
+              packageName == other.packageName &&
+              clientVersionStalenessDays == other.clientVersionStalenessDays &&
+              updatePriority == other.updatePriority;
 
   @override
   int get hashCode =>
@@ -256,13 +258,13 @@ class AppUpdateInfo {
   @override
   String toString() =>
       'InAppUpdateState{updateAvailability: $updateAvailability, '
-      'immediateUpdateAllowed: $immediateUpdateAllowed, '
-      'immediateAllowedPreconditions: $immediateAllowedPreconditions, '
-      'flexibleUpdateAllowed: $flexibleUpdateAllowed, '
-      'flexibleAllowedPreconditions: $flexibleAllowedPreconditions, '
-      'availableVersionCode: $availableVersionCode, '
-      'installStatus: $installStatus, '
-      'packageName: $packageName, '
-      'clientVersionStalenessDays: $clientVersionStalenessDays, '
-      'updatePriority: $updatePriority}';
+          'immediateUpdateAllowed: $immediateUpdateAllowed, '
+          'immediateAllowedPreconditions: $immediateAllowedPreconditions, '
+          'flexibleUpdateAllowed: $flexibleUpdateAllowed, '
+          'flexibleAllowedPreconditions: $flexibleAllowedPreconditions, '
+          'availableVersionCode: $availableVersionCode, '
+          'installStatus: $installStatus, '
+          'packageName: $packageName, '
+          'clientVersionStalenessDays: $clientVersionStalenessDays, '
+          'updatePriority: $updatePriority}';
 }

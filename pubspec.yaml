@@ -5,8 +5,8 @@ homepage: https://jonasbark.de
 repository: https://github.com/jonasbark/flutter_in_app_update
 
 environment:
-  sdk: '>=2.17.0 <4.0.0'
-  flutter: ">=1.20.0"
+  sdk: '>=3.4.0 <4.0.0'
+  flutter: ">=2.17.0"
 
 dependencies:
   flutter:

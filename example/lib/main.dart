@@ -3,23 +3,25 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:in_app_update/in_app_update.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(const MyApp());
 
 class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
   @override
-  _MyAppState createState() => _MyAppState();
+  State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
   AppUpdateInfo? _updateInfo;
 
-  GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
   bool _flexibleUpdateAvailable = false;
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> checkForUpdate() async {
-    InAppUpdate.checkForUpdate().then((info) {
+    await InAppUpdate.checkForUpdate().then((info) {
       setState(() {
         _updateInfo = info;
       });
@@ -51,48 +53,47 @@ class _MyAppState extends State<MyApp> {
                 child: Text('Update info: $_updateInfo'),
               ),
               ElevatedButton(
-                child: Text('Check for Update'),
                 onPressed: () => checkForUpdate(),
+                child: const Text('Check for Update'),
               ),
               ElevatedButton(
-                child: Text('Perform immediate update'),
                 onPressed: _updateInfo?.updateAvailability ==
-                        UpdateAvailability.updateAvailable
+                    UpdateAvailability.updateAvailable
                     ? () {
-                        InAppUpdate.performImmediateUpdate()
-                            .catchError((e) {
-                              showSnack(e.toString());
-                             return AppUpdateResult.inAppUpdateFailed;
-                            });
-                      }
+                  InAppUpdate.performImmediateUpdate().catchError((e) {
+                    showSnack(e.toString());
+                    return AppUpdateResult.inAppUpdateFailed;
+                  });
+                }
                     : null,
+                child: const Text('Perform immediate update'),
               ),
               ElevatedButton(
-                child: Text('Start flexible update'),
                 onPressed: _updateInfo?.updateAvailability ==
-                        UpdateAvailability.updateAvailable
+                    UpdateAvailability.updateAvailable
                     ? () {
-                        InAppUpdate.startFlexibleUpdate().then((_) {
-                          setState(() {
-                            _flexibleUpdateAvailable = true;
-                          });
-                        }).catchError((e) {
-                          showSnack(e.toString());
-                        });
-                      }
+                  InAppUpdate.startFlexibleUpdate().then((_) {
+                    setState(() {
+                      _flexibleUpdateAvailable = true;
+                    });
+                  }).catchError((e) {
+                    showSnack(e.toString());
+                  });
+                }
                     : null,
+                child: const Text('Start flexible update'),
               ),
               ElevatedButton(
-                child: Text('Complete flexible update'),
                 onPressed: !_flexibleUpdateAvailable
                     ? null
                     : () {
-                        InAppUpdate.completeFlexibleUpdate().then((_) {
-                          showSnack("Success!");
-                        }).catchError((e) {
-                          showSnack(e.toString());
-                        });
-                      },
+                  InAppUpdate.completeFlexibleUpdate().then((_) {
+                    showSnack("Success!");
+                  }).catchError((e) {
+                    showSnack(e.toString());
+                  });
+                },
+                child: const Text('Complete flexible update'),
               )
             ],
           ),
