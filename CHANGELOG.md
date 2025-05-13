@@ -1,3 +1,28 @@
+## 4.2.3
+- Migrate from jcenter to maven central thanks to @xVemu
+
+## 4.2.2
+- Match Kotlin jvm compatibility to java compatibility thanks to @ciriousjoker
+
+## 4.2.1
+- Add namespace to support gradle 8 (#105) thanks to @Rexios80
+
+## 4.2.0
+- added install update listener feature (#103) thanks to @ViniciusSossela
+
+## 4.1.4
+* use kotlin 1.7.10, which is the oldest version supported by the play store update library. You will need to adjust this in your project if you use an older version of kotlin.
+
+## 4.1.3
+* fix parsing of preconditions
+
+## 4.1.1
+* fix data type for `immediateAllowedPreconditions` and `flexibleAllowedPreconditions` (fixes #99)
+
+## 4.1.0
+* update Play In-App Update library to 2.10.1, which includes support for Android 14
+* introduce `immediateAllowedPreconditions` and `flexibleAllowedPreconditions` fields to `AppUpdateInfo` to check why an update may not be possible
+
 ## 4.0.1
 * improve documentation (thanks to @enzo-santos)
 

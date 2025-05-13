@@ -35,21 +35,24 @@ enum UpdateAvailability {
 }
 
 enum AppUpdateResult {
-  /// The user has accepted the update. For immediate updates, you might not 
-  /// receive this callback because the update should already be completed by 
+  /// The user has accepted the update. For immediate updates, you might not
+  /// receive this callback because the update should already be completed by
   /// Google Play by the time the control is given back to your app.
   success,
 
   /// The user has denied or cancelled the update.
   userDeniedUpdate,
 
-  /// Some other error prevented either the user from providing consent or the 
+  /// Some other error prevented either the user from providing consent or the
   /// update to proceed.
   inAppUpdateFailed,
 }
 
 class InAppUpdate {
-  static const MethodChannel _channel = const MethodChannel('in_app_update');
+  static const MethodChannel _channel =
+      const MethodChannel('de.ffuf.in_app_update/methods');
+  static const EventChannel _installListener =
+      const EventChannel('de.ffuf.in_app_update/stateEvents');
 
   /// Has to be called before being able to start any update.
   ///
@@ -59,16 +62,51 @@ class InAppUpdate {
     final result = await _channel.invokeMethod('checkForUpdate');
 
     return AppUpdateInfo(
-      updateAvailability:
-          UpdateAvailability.values.firstWhere((element) => element.value == result['updateAvailability']),
+      updateAvailability: UpdateAvailability.values.firstWhere(
+          (element) => element.value == result['updateAvailability']),
       immediateUpdateAllowed: result['immediateAllowed'],
+      immediateAllowedPreconditions: result['immediateAllowedPreconditions']
+          ?.map<int>((e) => e as int)
+          .toList(),
       flexibleUpdateAllowed: result['flexibleAllowed'],
+      flexibleAllowedPreconditions: result['flexibleAllowedPreconditions']
+          ?.map<int>((e) => e as int)
+          .toList(),
       availableVersionCode: result['availableVersionCode'],
-      installStatus: InstallStatus.values.firstWhere((element) => element.value == result['installStatus']),
+      installStatus: InstallStatus.values
+          .firstWhere((element) => element.value == result['installStatus']),
       packageName: result['packageName'],
       clientVersionStalenessDays: result['clientVersionStalenessDays'],
       updatePriority: result['updatePriority'],
     );
+  }
+
+  static Stream<InstallStatus> get installUpdateListener {
+    return _installListener
+        .receiveBroadcastStream()
+        .cast<int>()
+        .map((int value) {
+      switch (value) {
+        case 0:
+          return InstallStatus.unknown;
+        case 1:
+          return InstallStatus.pending;
+        case 2:
+          return InstallStatus.downloading;
+        case 3:
+          return InstallStatus.installing;
+        case 4:
+          return InstallStatus.installed;
+        case 5:
+          return InstallStatus.failed;
+        case 6:
+          return InstallStatus.canceled;
+        case 11:
+          return InstallStatus.downloaded;
+        default:
+          return InstallStatus.unknown;
+      }
+    });
   }
 
   /// Performs an immediate update that is entirely handled by the Play API.
@@ -129,24 +167,29 @@ class InAppUpdate {
   }
 }
 
-/// Contains information about the availability and progress of an app 
+/// Contains information about the availability and progress of an app
 /// update.
 ///
 /// For more information, see its corresponding page on
 /// [Android Developers](https://developer.android.com/reference/com/google/android/play/core/appupdate/AppUpdateInfo).
 class AppUpdateInfo {
-
   /// Whether an update is available for the app.
   ///
   /// This is a value from [UpdateAvailability].
   final UpdateAvailability updateAvailability;
-  
+
   /// Whether an immediate update is allowed.
   final bool immediateUpdateAllowed;
-  
+
+  /// determine the reason why an update cannot be started
+  final List<int>? immediateAllowedPreconditions;
+
   /// Whether a flexible update is allowed.
   final bool flexibleUpdateAllowed;
-  
+
+  /// determine the reason why an update cannot be started
+  final List<int>? flexibleAllowedPreconditions;
+
   /// The version code of the update.
   ///
   /// If no updates are available, this is an arbitrary value.
@@ -154,7 +197,7 @@ class AppUpdateInfo {
 
   /// The progress status of the update.
   ///
-  /// This value is defined only if [updateAvailability] is 
+  /// This value is defined only if [updateAvailability] is
   /// [UpdateAvailability.developerTriggeredUpdateInProgress].
   ///
   /// This is a value from [InstallStatus].
@@ -162,11 +205,11 @@ class AppUpdateInfo {
 
   /// The package name for the app to be updated.
   final String packageName;
-  
-  /// The in-app update priority for this update, as defined by the developer 
+
+  /// The in-app update priority for this update, as defined by the developer
   /// in the Google Play Developer API.
   ///
-  /// This value is defined only if [updateAvailability] is 
+  /// This value is defined only if [updateAvailability] is
   /// [UpdateAvailability.updateAvailable].
   final int updatePriority;
 
@@ -177,10 +220,12 @@ class AppUpdateInfo {
   /// this is null.
   final int? clientVersionStalenessDays;
 
-AppUpdateInfo({
+  AppUpdateInfo({
     required this.updateAvailability,
     required this.immediateUpdateAllowed,
+    required this.immediateAllowedPreconditions,
     required this.flexibleUpdateAllowed,
+    required this.flexibleAllowedPreconditions,
     required this.availableVersionCode,
     required this.installStatus,
     required this.packageName,
@@ -195,7 +240,10 @@ AppUpdateInfo({
           runtimeType == other.runtimeType &&
           updateAvailability == other.updateAvailability &&
           immediateUpdateAllowed == other.immediateUpdateAllowed &&
+          immediateAllowedPreconditions ==
+              other.immediateAllowedPreconditions &&
           flexibleUpdateAllowed == other.flexibleUpdateAllowed &&
+          flexibleAllowedPreconditions == other.flexibleAllowedPreconditions &&
           availableVersionCode == other.availableVersionCode &&
           installStatus == other.installStatus &&
           packageName == other.packageName &&
@@ -206,7 +254,9 @@ AppUpdateInfo({
   int get hashCode =>
       updateAvailability.hashCode ^
       immediateUpdateAllowed.hashCode ^
+      immediateAllowedPreconditions.hashCode ^
       flexibleUpdateAllowed.hashCode ^
+      flexibleAllowedPreconditions.hashCode ^
       availableVersionCode.hashCode ^
       installStatus.hashCode ^
       packageName.hashCode ^
@@ -214,9 +264,12 @@ AppUpdateInfo({
       updatePriority.hashCode;
 
   @override
-  String toString() => 'InAppUpdateState{updateAvailability: $updateAvailability, '
+  String toString() =>
+      'InAppUpdateState{updateAvailability: $updateAvailability, '
       'immediateUpdateAllowed: $immediateUpdateAllowed, '
+      'immediateAllowedPreconditions: $immediateAllowedPreconditions, '
       'flexibleUpdateAllowed: $flexibleUpdateAllowed, '
+      'flexibleAllowedPreconditions: $flexibleAllowedPreconditions, '
       'availableVersionCode: $availableVersionCode, '
       'installStatus: $installStatus, '
       'packageName: $packageName, '
