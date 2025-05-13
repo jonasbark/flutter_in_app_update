@@ -149,6 +149,16 @@ class InAppUpdate {
     }
   }
 
+  // App update progress in percentage (0 - 100)
+  static Future<int> getFlexibleUpdateProgress() async {
+    return await _channel.invokeMethod('flexibleUpdateProgress');
+  }
+
+  // App update size in bytes
+  static Future<int> getFlexibleUpdateSize() async {
+    return await _channel.invokeMethod('flexibleUpdateSize');
+  }
+
   /// Installs the update downloaded via [startFlexibleUpdate].
   ///
   /// [startFlexibleUpdate] has to be completed successfully.

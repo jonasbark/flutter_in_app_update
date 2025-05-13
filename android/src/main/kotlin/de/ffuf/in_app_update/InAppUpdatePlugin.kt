@@ -80,12 +80,17 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
     private var appUpdateInfo: AppUpdateInfo? = null
     private var appUpdateManager: AppUpdateManager? = null
 
+    private var flexibleUpdateProgress: Long = 0L
+    private var flexibleUpdateSize: Long = 0L
+
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
             "checkForUpdate" -> checkForUpdate(result)
             "performImmediateUpdate" -> performImmediateUpdate(result)
             "startFlexibleUpdate" -> startFlexibleUpdate(result)
             "completeFlexibleUpdate" -> completeFlexibleUpdate(result)
+            "flexibleUpdateProgress" -> getFlexibleUpdateProgress(result)
+            "flexibleUpdateSize" -> getFlexibleUpdateSize(result)
             else -> result.notImplemented()
         }
     }
@@ -227,7 +232,14 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
 
         appUpdateManager?.registerListener { state ->
             addState(state.installStatus())
-            if (state.installStatus() == InstallStatus.DOWNLOADED) {
+            if (state.installStatus() == InstallStatus.DOWNLOADING) {
+                val bytesDownloaded = state.bytesDownloaded()
+                val totalBytesToDownload = state.totalBytesToDownload()
+                flexibleUpdateSize = totalBytesToDownload
+                flexibleUpdateProgress = (bytesDownloaded * 100) / totalBytesToDownload
+                // Show update progress bar.
+            } else if (state.installStatus() == InstallStatus.DOWNLOADED) {
+                flexibleUpdateProgress = 100
                 updateResult?.success(null)
                 updateResult = null
             } else if (state.installErrorCode() != InstallErrorCode.NO_ERROR) {
@@ -239,6 +251,14 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
                 updateResult = null
             }
         }
+    }
+
+    private fun getFlexibleUpdateProgress(result: Result) = checkAppState(result) {
+        result.success(flexibleUpdateProgress)
+    }
+
+    private fun getFlexibleUpdateSize(result: Result) = checkAppState(result) {
+        result.success(flexibleUpdateSize)
     }
 
     private fun completeFlexibleUpdate(result: Result) = checkAppState(result) {
