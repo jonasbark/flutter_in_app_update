@@ -179,8 +179,8 @@ class InAppUpdatePlugin : FlutterPlugin, MethodCallHandler,
                     try {
                         appUpdateManager?.startUpdateFlowForResult(
                             appUpdateInfo,
-                            AppUpdateType.IMMEDIATE,
                             activity,
+                            AppUpdateOptions.defaultOptions(AppUpdateType.IMMEDIATE),
                             REQUEST_CODE_START_UPDATE
                         )
                     } catch (e: SendIntentException) {
