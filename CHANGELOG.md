@@ -1,3 +1,6 @@
+## 4.2.4
+- Migrate deprecated method (fixes #133)
+
 ## 4.2.3
 - Migrate from jcenter to maven central thanks to @xVemu
 
