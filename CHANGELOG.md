@@ -1,3 +1,6 @@
+## 4.2.5
+- Update dependencies (thanks @ivan-horchakov)
+ 
 ## 4.2.4
 - Migrate deprecated method (fixes #133)
 
