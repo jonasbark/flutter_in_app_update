@@ -1,4 +1,4 @@
-group 'de.ffuf.in_app_update'
+group 'de.ffuf.in_app_update_plus'
 version '1.0-SNAPSHOT'
 
 buildscript {
@@ -26,7 +26,7 @@ apply plugin: 'kotlin-android'
 
 android {
     if (project.android.hasProperty("namespace")) {
-        namespace 'de.ffuf.in_app_update'
+        namespace 'de.ffuf.in_app_update_plus'
     }
 
     compileSdkVersion 36

@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 /// Status of a download/install.
@@ -48,37 +50,146 @@ enum AppUpdateResult {
   inAppUpdateFailed,
 }
 
+enum AppUpdateDialogResult {
+  /// No update is currently available.
+  noUpdateAvailable,
+
+  /// An update is available but neither immediate nor flexible update is
+  /// allowed on this device.
+  updateNotAllowed,
+
+  /// The user dismissed the package-provided iOS update dialog.
+  userDismissed,
+
+  /// The update flow was started.
+  updateStarted,
+
+  /// The update flow could not be started.
+  updateFailed,
+}
+
 class InAppUpdate {
   static const MethodChannel _channel =
-      const MethodChannel('de.ffuf.in_app_update/methods');
+      MethodChannel('de.ffuf.in_app_update_plus/methods');
   static const EventChannel _installListener =
-      const EventChannel('de.ffuf.in_app_update/stateEvents');
+      EventChannel('de.ffuf.in_app_update_plus/stateEvents');
 
   /// Has to be called before being able to start any update.
   ///
   /// Returns [AppUpdateInfo], which can be used to decide if
   /// [startFlexibleUpdate] or [performImmediateUpdate] should be called.
-  static Future<AppUpdateInfo> checkForUpdate() async {
-    final result = await _channel.invokeMethod('checkForUpdate');
+  ///
+  /// On iOS, [countryCode] can be used to choose the App Store country for the
+  /// lookup. [appStoreId] can be supplied when the App Store listing should be
+  /// resolved by Apple ID instead of the app bundle identifier.
+  static Future<AppUpdateInfo> checkForUpdate({
+    String? countryCode,
+    String? appStoreId,
+  }) async {
+    final result = await _channel.invokeMapMethod<String, dynamic>(
+      'checkForUpdate',
+      <String, dynamic>{
+        if (countryCode != null) 'countryCode': countryCode,
+        if (appStoreId != null) 'appStoreId': appStoreId,
+      },
+    );
+
+    if (result == null) {
+      throw PlatformException(
+        code: 'NULL_UPDATE_INFO',
+        message: 'The platform returned no update information.',
+      );
+    }
 
     return AppUpdateInfo(
-      updateAvailability: UpdateAvailability.values.firstWhere(
-          (element) => element.value == result['updateAvailability']),
-      immediateUpdateAllowed: result['immediateAllowed'],
-      immediateAllowedPreconditions: result['immediateAllowedPreconditions']
-          ?.map<int>((e) => e as int)
-          .toList(),
-      flexibleUpdateAllowed: result['flexibleAllowed'],
-      flexibleAllowedPreconditions: result['flexibleAllowedPreconditions']
-          ?.map<int>((e) => e as int)
-          .toList(),
-      availableVersionCode: result['availableVersionCode'],
-      installStatus: InstallStatus.values
-          .firstWhere((element) => element.value == result['installStatus']),
-      packageName: result['packageName'],
-      clientVersionStalenessDays: result['clientVersionStalenessDays'],
-      updatePriority: result['updatePriority'],
+      updateAvailability:
+          _updateAvailabilityFromValue(result['updateAvailability']),
+      immediateUpdateAllowed: result['immediateAllowed'] == true,
+      immediateAllowedPreconditions:
+          _intListFromValue(result['immediateAllowedPreconditions']),
+      flexibleUpdateAllowed: result['flexibleAllowed'] == true,
+      flexibleAllowedPreconditions:
+          _intListFromValue(result['flexibleAllowedPreconditions']),
+      availableVersionCode: _intFromValue(result['availableVersionCode']),
+      installStatus: _installStatusFromValue(result['installStatus']),
+      packageName: _stringFromValue(result['packageName']) ?? '',
+      clientVersionStalenessDays:
+          _intFromValue(result['clientVersionStalenessDays']),
+      updatePriority: _intFromValue(result['updatePriority']) ?? 0,
+      availableVersionName: _stringFromValue(result['availableVersionName']),
+      installedVersionName: _stringFromValue(result['installedVersionName']),
+      storeUrl: _stringFromValue(result['storeUrl']),
+      appStoreId: _intFromValue(result['appStoreId']),
+      releaseNotes: _stringFromValue(result['releaseNotes']),
     );
+  }
+
+  /// Checks for an update and starts the platform update flow when possible.
+  ///
+  /// On Android this starts Google Play's native immediate update UI when
+  /// allowed. If [preferFlexibleUpdate] is true and flexible updates are
+  /// allowed, the flexible update flow is started instead.
+  ///
+  /// On iOS this shows a package-provided Cupertino update dialog. If the user
+  /// taps the update action, the App Store page is opened.
+  ///
+  /// Set [forceUpdate] to true on iOS to hide the cancel action and prevent
+  /// barrier dismissal. The app still cannot install an iOS update directly;
+  /// Apple requires installation to happen through the App Store.
+  static Future<AppUpdateDialogResult> checkAndShowUpdateDialog(
+    BuildContext context, {
+    String? countryCode,
+    String? appStoreId,
+    bool forceUpdate = false,
+    bool preferFlexibleUpdate = false,
+    String? title,
+    String? message,
+    String? updateButtonText,
+    String? laterButtonText,
+  }) async {
+    final info = await checkForUpdate(
+      countryCode: countryCode,
+      appStoreId: appStoreId,
+    );
+
+    if (info.updateAvailability != UpdateAvailability.updateAvailable) {
+      return AppUpdateDialogResult.noUpdateAvailable;
+    }
+
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      final shouldUpdate = await _showCupertinoUpdateDialog(
+        context,
+        info: info,
+        forceUpdate: forceUpdate,
+        title: title,
+        message: message,
+        updateButtonText: updateButtonText,
+        laterButtonText: laterButtonText,
+      );
+
+      if (shouldUpdate != true) {
+        return AppUpdateDialogResult.userDismissed;
+      }
+
+      final result = await performImmediateUpdate();
+      return result == AppUpdateResult.success
+          ? AppUpdateDialogResult.updateStarted
+          : AppUpdateDialogResult.updateFailed;
+    }
+
+    final result = await _startBestAndroidUpdateFlow(
+      info,
+      preferFlexibleUpdate: preferFlexibleUpdate,
+    );
+    if (result == null) {
+      return AppUpdateDialogResult.updateNotAllowed;
+    }
+    if (result == AppUpdateResult.userDeniedUpdate) {
+      return AppUpdateDialogResult.userDismissed;
+    }
+    return result == AppUpdateResult.success
+        ? AppUpdateDialogResult.updateStarted
+        : AppUpdateDialogResult.updateFailed;
   }
 
   static Stream<InstallStatus> get installUpdateListener {
@@ -110,6 +221,7 @@ class InAppUpdate {
   }
 
   /// Performs an immediate update that is entirely handled by the Play API.
+  /// On iOS, this opens the app's App Store page.
   ///
   /// [checkForUpdate] has to be called first to be able to run this.
   static Future<AppUpdateResult> performImmediateUpdate() async {
@@ -128,6 +240,9 @@ class InAppUpdate {
   }
 
   /// Starts the download of the app update.
+  ///
+  /// Android supports flexible background downloads. iOS does not; on iOS this
+  /// opens the app's App Store page, matching [performImmediateUpdate].
   ///
   /// Throws a [PlatformException] if the download fails.
   /// When the returned [Future] is completed without any errors,
@@ -150,10 +265,109 @@ class InAppUpdate {
   }
 
   /// Installs the update downloaded via [startFlexibleUpdate].
+  /// On iOS, this completes immediately because installation is handled by the
+  /// App Store.
   ///
   /// [startFlexibleUpdate] has to be completed successfully.
   static Future<void> completeFlexibleUpdate() async {
     return await _channel.invokeMethod('completeFlexibleUpdate');
+  }
+
+  static Future<AppUpdateResult?> _startBestAndroidUpdateFlow(
+    AppUpdateInfo info, {
+    required bool preferFlexibleUpdate,
+  }) {
+    if (preferFlexibleUpdate && info.flexibleUpdateAllowed) {
+      return startFlexibleUpdate();
+    }
+    if (info.immediateUpdateAllowed) {
+      return performImmediateUpdate();
+    }
+    if (info.flexibleUpdateAllowed) {
+      return startFlexibleUpdate();
+    }
+    return Future<AppUpdateResult?>.value();
+  }
+
+  static Future<bool?> _showCupertinoUpdateDialog(
+    BuildContext context, {
+    required AppUpdateInfo info,
+    required bool forceUpdate,
+    String? title,
+    String? message,
+    String? updateButtonText,
+    String? laterButtonText,
+  }) {
+    final version = info.availableVersionName ??
+        (info.availableVersionCode == null
+            ? null
+            : info.availableVersionCode.toString());
+    final defaultMessage = version == null
+        ? 'A new version is available on the App Store.'
+        : 'Version $version is available on the App Store.';
+
+    return showCupertinoDialog<bool>(
+      context: context,
+      barrierDismissible: !forceUpdate,
+      builder: (context) {
+        return CupertinoAlertDialog(
+          title: Text(title ?? 'Update Available'),
+          content: Text(message ?? defaultMessage),
+          actions: [
+            if (!forceUpdate)
+              CupertinoDialogAction(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(laterButtonText ?? 'Later'),
+              ),
+            CupertinoDialogAction(
+              isDefaultAction: true,
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(updateButtonText ?? 'Update'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  static UpdateAvailability _updateAvailabilityFromValue(Object? value) {
+    final intValue = _intFromValue(value);
+    return UpdateAvailability.values.firstWhere(
+      (element) => element.value == intValue,
+      orElse: () => UpdateAvailability.unknown,
+    );
+  }
+
+  static InstallStatus _installStatusFromValue(Object? value) {
+    final intValue = _intFromValue(value);
+    return InstallStatus.values.firstWhere(
+      (element) => element.value == intValue,
+      orElse: () => InstallStatus.unknown,
+    );
+  }
+
+  static int? _intFromValue(Object? value) {
+    if (value is int) {
+      return value;
+    }
+    if (value is num) {
+      return value.toInt();
+    }
+    return null;
+  }
+
+  static String? _stringFromValue(Object? value) {
+    return value is String && value.isNotEmpty ? value : null;
+  }
+
+  static List<int>? _intListFromValue(Object? value) {
+    if (value == null) {
+      return null;
+    }
+    if (value is Iterable) {
+      return value.map(_intFromValue).whereType<int>().toList(growable: false);
+    }
+    return null;
   }
 }
 
@@ -210,18 +424,53 @@ class AppUpdateInfo {
   /// this is null.
   final int? clientVersionStalenessDays;
 
+  /// The latest App Store version string on iOS.
+  ///
+  /// This is null on Android.
+  final String? availableVersionName;
+
+  /// The installed version string on iOS.
+  ///
+  /// This is null on Android.
+  final String? installedVersionName;
+
+  /// The App Store URL resolved during iOS update checks.
+  ///
+  /// This is null on Android.
+  final String? storeUrl;
+
+  /// The App Store numeric app identifier resolved during iOS update checks.
+  ///
+  /// This is null on Android.
+  final int? appStoreId;
+
+  /// The App Store release notes for the available iOS version.
+  ///
+  /// This is null on Android or when App Store metadata omits release notes.
+  final String? releaseNotes;
+
   AppUpdateInfo({
     required this.updateAvailability,
     required this.immediateUpdateAllowed,
-    required this.immediateAllowedPreconditions,
+    required List<int>? immediateAllowedPreconditions,
     required this.flexibleUpdateAllowed,
-    required this.flexibleAllowedPreconditions,
+    required List<int>? flexibleAllowedPreconditions,
     required this.availableVersionCode,
     required this.installStatus,
     required this.packageName,
     required this.clientVersionStalenessDays,
     required this.updatePriority,
-  });
+    this.availableVersionName,
+    this.installedVersionName,
+    this.storeUrl,
+    this.appStoreId,
+    this.releaseNotes,
+  })  : immediateAllowedPreconditions = immediateAllowedPreconditions == null
+            ? null
+            : List.unmodifiable(immediateAllowedPreconditions),
+        flexibleAllowedPreconditions = flexibleAllowedPreconditions == null
+            ? null
+            : List.unmodifiable(flexibleAllowedPreconditions);
 
   @override
   bool operator ==(Object other) =>
@@ -230,32 +479,43 @@ class AppUpdateInfo {
           runtimeType == other.runtimeType &&
           updateAvailability == other.updateAvailability &&
           immediateUpdateAllowed == other.immediateUpdateAllowed &&
-          immediateAllowedPreconditions ==
-              other.immediateAllowedPreconditions &&
+          listEquals(immediateAllowedPreconditions,
+              other.immediateAllowedPreconditions) &&
           flexibleUpdateAllowed == other.flexibleUpdateAllowed &&
-          flexibleAllowedPreconditions == other.flexibleAllowedPreconditions &&
+          listEquals(flexibleAllowedPreconditions,
+              other.flexibleAllowedPreconditions) &&
           availableVersionCode == other.availableVersionCode &&
           installStatus == other.installStatus &&
           packageName == other.packageName &&
           clientVersionStalenessDays == other.clientVersionStalenessDays &&
-          updatePriority == other.updatePriority;
+          updatePriority == other.updatePriority &&
+          availableVersionName == other.availableVersionName &&
+          installedVersionName == other.installedVersionName &&
+          storeUrl == other.storeUrl &&
+          appStoreId == other.appStoreId &&
+          releaseNotes == other.releaseNotes;
 
   @override
-  int get hashCode =>
-      updateAvailability.hashCode ^
-      immediateUpdateAllowed.hashCode ^
-      immediateAllowedPreconditions.hashCode ^
-      flexibleUpdateAllowed.hashCode ^
-      flexibleAllowedPreconditions.hashCode ^
-      availableVersionCode.hashCode ^
-      installStatus.hashCode ^
-      packageName.hashCode ^
-      clientVersionStalenessDays.hashCode ^
-      updatePriority.hashCode;
+  int get hashCode => Object.hash(
+        updateAvailability,
+        immediateUpdateAllowed,
+        Object.hashAll(immediateAllowedPreconditions ?? const [null]),
+        flexibleUpdateAllowed,
+        Object.hashAll(flexibleAllowedPreconditions ?? const [null]),
+        availableVersionCode,
+        installStatus,
+        packageName,
+        clientVersionStalenessDays,
+        updatePriority,
+        availableVersionName,
+        installedVersionName,
+        storeUrl,
+        appStoreId,
+        releaseNotes,
+      );
 
   @override
-  String toString() =>
-      'InAppUpdateState{updateAvailability: $updateAvailability, '
+  String toString() => 'AppUpdateInfo{updateAvailability: $updateAvailability, '
       'immediateUpdateAllowed: $immediateUpdateAllowed, '
       'immediateAllowedPreconditions: $immediateAllowedPreconditions, '
       'flexibleUpdateAllowed: $flexibleUpdateAllowed, '
@@ -264,5 +524,10 @@ class AppUpdateInfo {
       'installStatus: $installStatus, '
       'packageName: $packageName, '
       'clientVersionStalenessDays: $clientVersionStalenessDays, '
-      'updatePriority: $updatePriority}';
+      'updatePriority: $updatePriority, '
+      'availableVersionName: $availableVersionName, '
+      'installedVersionName: $installedVersionName, '
+      'storeUrl: $storeUrl, '
+      'appStoreId: $appStoreId, '
+      'releaseNotes: $releaseNotes}';
 }

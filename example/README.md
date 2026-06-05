@@ -1,6 +1,6 @@
-# in_app_update_example
+# in_app_update_plus_example
 
-Demonstrates how to use the in_app_update plugin.
+Demonstrates how to use the in_app_update_plus plugin.
 
 ```dart
   RaisedButton(

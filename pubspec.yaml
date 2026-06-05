@@ -1,8 +1,7 @@
-name: in_app_update
-description: Enables In App Updates on Android using the official Android APIs.
-version: 4.2.5
-homepage: https://jonasbark.de
-repository: https://github.com/jonasbark/flutter_in_app_update
+name: in_app_update_plus
+description: Checks for app updates on Android and iOS using Play Core and App Store lookup.
+version: 1.0.0
+homepage: https://pub.dev/packages/in_app_update_plus
 
 environment:
   sdk: '>=2.17.0 <4.0.0'
@@ -20,5 +19,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: de.ffuf.in_app_update
+        package: de.ffuf.in_app_update_plus
+        pluginClass: InAppUpdatePlugin
+      ios:
         pluginClass: InAppUpdatePlugin

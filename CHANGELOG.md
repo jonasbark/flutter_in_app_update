@@ -1,3 +1,10 @@
+## 1.0.0
+- Add iOS support using App Store lookup and App Store opening.
+- Add iOS metadata fields to `AppUpdateInfo`.
+- Add `checkAndShowUpdateDialog` for package-provided iOS dialog UI and Android update-flow launching.
+- Improve Android update result handling and listener cleanup.
+- Fix `AppUpdateInfo` list equality.
+
 ## 4.2.5
 - Update dependencies (thanks @ivan-horchakov)
  
