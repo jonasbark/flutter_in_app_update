@@ -1,3 +1,7 @@
+## 5.0.0
+- **Breaking:** requires Flutter 3.44 / Dart 3.12 or newer.
+- Migrate to Flutter's built-in Kotlin: the plugin no longer applies the Kotlin Gradle Plugin or declares its classpath, and uses the `kotlin { compilerOptions }` DSL instead of `kotlinOptions` (fixes #137)
+
 ## 4.2.5
 - Update dependencies (thanks @ivan-horchakov)
  
