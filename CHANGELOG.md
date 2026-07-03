@@ -1,3 +1,6 @@
+## 4.2.6
+- Support Flutter 3.44's built-in Kotlin: the Kotlin Gradle plugin is now only applied on AGP versions below 9, so the plugin works both with Flutter 3.44+ and older versions (fixes #137)
+
 ## 4.2.5
 - Update dependencies (thanks @ivan-horchakov)
  
