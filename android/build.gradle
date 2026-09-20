@@ -1,15 +1,14 @@
-group 'de.ffuf.in_app_update'
-version '1.0-SNAPSHOT'
+group = 'de.ffuf.in_app_update'
+version = '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '2.2.20'
     repositories {
         google()
         mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.13.0'
+        classpath 'com.android.tools.build:gradle:9.0.1'
     }
 }
 
@@ -22,19 +21,16 @@ allprojects {
 
 apply plugin: 'com.android.library'
 
-// Kotlin is provided by Flutter's built-in Kotlin support (Flutter 3.44+), so
-// the plugin no longer applies the Kotlin Gradle Plugin itself. See:
-// https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-plugin-authors
 android {
     if (project.android.hasProperty("namespace")) {
-        namespace 'de.ffuf.in_app_update'
+        namespace = 'de.ffuf.in_app_update'
     }
 
-    compileSdkVersion 36
+    compileSdk = 36
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     sourceSets {
@@ -43,22 +39,21 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 16
+        minSdk = 16
     }
 
-    lintOptions {
-        disable 'InvalidPackage'
+    lint {
+        disable += 'InvalidPackage'
     }
 }
 
 kotlin {
     compilerOptions {
-        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'com.google.android.play:app-update:2.1.0'
 
     // For Kotlin users, also add the Kotlin extensions library for Play In-App Update:
